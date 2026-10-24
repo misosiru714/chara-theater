@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#1c1c1e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="きゃらしあたー">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-KH8Z1MCQK0"></script>
 <script>
@@ -161,6 +165,9 @@ textarea{min-height:64px;resize:vertical}
 .sbthumb{position:absolute;z-index:60;width:8px;background:#8f8f8f;opacity:.5;clip-path:polygon(0 5px,100% 0,100% calc(100% - 5px),0 100%);cursor:grab;transition:opacity .15s;touch-action:none}
 .sbthumb:hover,.sbthumb.drag{opacity:.85}
 .ch{visibility:hidden}.ch.on{visibility:visible}.rtw{visibility:hidden}#dtext{white-space:pre-wrap}
+#hdrTog{display:none;position:fixed;left:calc(env(safe-area-inset-left,0px) + 6px);top:calc(env(safe-area-inset-top,0px) + 6px);z-index:45;width:36px;height:36px;padding:0;border-radius:50%;background:#1c1c1ecc;border:1px solid #666;color:#fff;font-size:16px}
+body.hdr-can #hdrTog{display:block}
+body.hdr-hide header{display:none}
 @media(max-width:760px){.grail{width:64px}.ggrid{padding:12px;gap:12px}}
 @media(max-width:760px){
 main{flex-direction:column}
@@ -188,6 +195,7 @@ header{padding:4px 8px}header button{padding:4px 8px}
 </style>
 </head>
 <body>
+<button id="hdrTog" aria-label="メニュー">☰</button>
 <div id="app">
 <header>
   <h1>きゃらしあたー（仮）</h1>
@@ -198,6 +206,7 @@ header{padding:4px 8px}header button{padding:4px 8px}
   <button id="bZip">ZIPで保存</button>
   <button id="bLoad">ZIPを読み込む</button>
   <input id="fZip" type="file" accept=".zip" hidden>
+  <button id="bFs" style="display:none" title="全画面">⛶</button>
   <button id="bBgm" style="display:none">♪ BGM</button>
   <button id="bSet">⚙ 設定</button>
 </header>
@@ -334,7 +343,7 @@ function renderGallery(){const g=$("#gallery");g.classList.toggle("show",showLis
   h("div",{class:"grail"},...["ALL",...roles].map(r=>h("button",{class:listRole===r?"on":"",onclick:()=>{listRole=r;render()}},r))));
  const gg=$(".ggrid");gg.addEventListener("wheel",e=>{if(Math.abs(e.deltaX)<Math.abs(e.deltaY)){gg.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});fitGrid()}
 function renderHeader(){const d=(id,on)=>$(id).style.display=on?"":"none";
- d("#bList",!showList);d("#seg",!showList);document.body.dataset.screen=showList?"list":"char";d("#bZip",showList);d("#bLoad",showList);d("#bBgm",!!S.bgm);$("#bBgm").classList.toggle("on",!bgm.paused);
+ d("#bList",!showList);d("#seg",!showList);document.body.dataset.screen=showList?"list":"char";d("#bZip",showList);d("#bLoad",showList);d("#bBgm",!!S.bgm);d("#bFs",!!document.documentElement.requestFullscreen);$("#bFs").classList.toggle("on",!!document.fullscreenElement);$("#bBgm").classList.toggle("on",!bgm.paused);
  $("#mView").classList.toggle("on",mode==="view");$("#mEdit").classList.toggle("on",mode==="edit")}
 function plate(){const c=C();return[h("div",{id:"nameplate"},h("div",{class:"role"},c.role),h("div",{class:"en"},c.en),h("div",{class:"nm"},c.name)),
  h("div",{id:"credit"},c.il&&cr(IC_IL,c.il),c.cv&&cr(IC_CV,c.cv,"＋"))]}
@@ -430,7 +439,7 @@ function editVoice(c){const v0=c.voices;
  return h("div",{},h("div",{class:"row",style:"justify-content:space-between;flex-wrap:nowrap;margin:0 0 8px"},h("p",{class:"hint",style:"margin:0"},"音声ファイルは、各ボイスのカードにドロップしても入ります。セリフにも、テキスト整形が使えます。"),h("button",{class:"qbtn",title:"テキスト整形の書き方",onclick:buildHelp},"？")),...cards,
   h("div",{class:"row"},h("button",{onclick:()=>{v0.push({id:uid(),title:"",text:"",audio:null});render();dirty();const s=$("#side");s.scrollTop=s.scrollHeight}},"ボイスを追加"),
    h("button",{onclick:()=>{const have=new Set(v0.map(v=>v.title));PRESET.filter(t=>!have.has(t)).forEach(t=>v0.push({id:uid(),title:t,text:"",audio:null}));render();dirty()}},"定番の項目をまとめて追加")))}
-function render(){renderHeader();renderStage();mode==="view"?renderView():renderEdit();paintDialog();renderGallery();$("#stage").classList.toggle("adjust",canAdjust())}
+function render(){renderHeader();renderStage();mode==="view"?renderView():renderEdit();paintDialog();renderGallery();$("#stage").classList.toggle("adjust",canAdjust());updHdr()}
 
 /* 専用スクロールバー(平行四辺形) */
 function attachBar(sc,par){if(!sc||!par)return;if(getComputedStyle(par).position==="static")par.style.position="relative";
@@ -453,8 +462,19 @@ function buildHelp(){let ov=$("#ov");if(!ov){ov=h("div",{id:"ov"});ov.addEventLi
   h("p",{class:"hint"},"プロファイルの本文やボイスのセリフに、この書き方で書くと、見るモードで整形されます。文字を選んで、書式ボタンを押しても付けられます。重ねて使うこともできます。"),
   ...rows.map(([n,syn,smp])=>h("div",{class:"hrow"},h("b",{},n),h("code",{},syn),h("span",{class:"hex"},"→ ",...(n==="透明"?["(見えません。ドラッグして反転させると見えます)"]:fmt(smp))))));
  ov.replaceChildren(box);attachBar(box,ov)}
+/* ヘッダーの自動格納(横向きスマホ)・全画面 */
+let hdrOpen=false;const mqShort=window.matchMedia?matchMedia("(max-height:480px)"):{matches:false};
+function updHdr(){const can=mqShort.matches&&!!(S.set&&S.set.hideHdr)&&!showList;if(!can)hdrOpen=false;
+ document.body.classList.toggle("hdr-can",can);document.body.classList.toggle("hdr-hide",can&&!hdrOpen);
+ const t=$("#hdrTog");if(t)t.textContent=hdrOpen?"×":"☰"}
+if(mqShort.addEventListener)mqShort.addEventListener("change",updHdr);
+const FS_OK=!!document.documentElement.requestFullscreen;
+function toggleFs(){if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen({navigationUI:"hide"}).catch(()=>{})}
+document.addEventListener("fullscreenchange",()=>{renderHeader();if($("#ov")&&$("#ov").dataset.k==="settings")buildSettings()});
+$("#hdrTog").onclick=()=>{hdrOpen=!hdrOpen;updHdr()};
+$("#bFs").onclick=toggleFs;
 /* ---------- 設定・BGM ---------- */
-const fixSet=()=>{S.roleIcons=S.roleIcons||{};S.set=Object.assign({bgmVol:.5,voiceVol:1,loop:true,duck:true},S.set||{})};
+const fixSet=()=>{S.roleIcons=S.roleIcons||{};S.set=Object.assign({bgmVol:.5,voiceVol:1,loop:true,duck:true,hideHdr:true},S.set||{})};
 function applyVol(){if(!S.set)return;const t=S.set.duck&&playing!=null?.35:1;bgm.volume=Math.min(1,Math.max(0,S.set.bgmVol*t));audio.volume=Math.min(1,Math.max(0,S.set.voiceVol));bgm.loop=!!S.set.loop}
 function loadBgm(){if(S.bgm){bgm.src=url(S.bgm)}else{bgm.pause();bgm.removeAttribute("src");try{bgm.load()}catch(_){}}applyVol()}
 function toggleBgm(){if(!S.bgm)return;bgm.paused?bgm.play().catch(()=>alert("BGMを再生できませんでした")):bgm.pause()}
@@ -464,7 +484,7 @@ const closeSettings=()=>{$("#ov")?.remove()};
 function buildSettings(){let ov=$("#ov");if(!ov){ov=h("div",{id:"ov"});ov.addEventListener("click",e=>{if(e.target===ov)closeSettings()});document.body.append(ov)}ov.dataset.k="settings";
  const st=S.set;
  const sl=(label,key)=>{const o=h("span",{class:"pc"},Math.round(st[key]*100)+"%");const r=h("input",{type:"range",min:0,max:100,step:1,value:Math.round(st[key]*100),oninput:()=>{st[key]=r.value/100;o.textContent=r.value+"%";applyVol();dirty()}});return h("div",{class:"ctl2"},h("span",{},label),r,o)};
- const chk=(label,key)=>h("label",{class:"chk"},h("input",{type:"checkbox",checked:!!st[key],onchange:e=>{st[key]=e.target.checked;applyVol();dirty()}}),label);
+ const chk=(label,key)=>h("label",{class:"chk"},h("input",{type:"checkbox",checked:!!st[key],onchange:e=>{st[key]=e.target.checked;applyVol();updHdr();dirty()}}),label);
  const setBgm=f=>{S.bgm=f;S.bgmName=f.name;loadBgm();dirty();buildSettings();renderHeader()};
  const rolesAll=[...new Set([...S.chars.map(c=>c.role).filter(Boolean),...Object.keys(S.roleIcons)])];
  const roleRow=r=>{const b=S.roleIcons[r];return h("div",{class:"rrow"},h("span",{class:"rpv"},b?h("img",{src:url(b),alt:""}):"なし"),h("span",{class:"rn"},r),
@@ -478,6 +498,10 @@ function buildSettings(){let ov=$("#ov");if(!ov){ov=h("div",{id:"ov"});ov.addEve
    h("div",{class:"row"},h("button",{onclick:()=>pick("audio/*",setBgm)},"BGMを選ぶ"),S.bgm&&h("button",{onclick:toggleBgm},bgm.paused?"▶ 再生":"■ 停止"),S.bgm&&h("button",{onclick:()=>{S.bgm=null;S.bgmName="";loadBgm();dirty();buildSettings();renderHeader()}},"外す")),
    sl("BGM音量","bgmVol"),chk("ループ再生","loop"),chk("ボイス再生中はBGMを小さくする","duck")),
   h("div",{class:"card"},h("h3",{},"ボイス"),sl("ボイス音量","voiceVol")),
+  h("div",{class:"card"},h("h3",{},"表示"),
+   chk("横向きのスマホでは、ヘッダーを隠す(左上の☰で出し入れ)","hideHdr"),
+   FS_OK?h("div",{class:"row"},h("button",{onclick:toggleFs},document.fullscreenElement?"全画面を解除":"全画面にする")):h("p",{class:"hint"},"このブラウザ(iPhoneのSafariなど)では、全画面表示のボタンは使えません。"),
+   h("p",{class:"hint"},"スマホでは、ブラウザの共有メニューから「ホーム画面に追加」して、そこから開くと、バーなしで表示できます。")),
   SHOW_ROLE_ICON&&h("div",{class:"card"},h("h3",{},"職業アイコン"),h("p",{class:"hint"},"キャラの「クラス表示」と同じ名前に、アイコン画像を設定できます。一覧のカードの左下に表示されます。"),...rolesAll.map(roleRow),addRole),
   h("p",{class:"hint"},"ブラウザの制限で、BGMは「再生」を押したあとに鳴り始めます。BGMとこの設定は、ブラウザ保存とZIPに含まれます。"));
  dropable(box,"audio/",setBgm);ov.replaceChildren(box);attachBar(box,ov)}
