@@ -2,7 +2,8 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1c1c1e">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-KH8Z1MCQK0"></script>
 <script>
@@ -16,7 +17,10 @@
 <style>
 :root{--ink:#111;--bar:#1c1c1e;--panel:#d9d9d9;--line:#b5b5b5;--acc:#f0b429;--rec:#d6402f;--font:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP",serif;--ui:"Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif}
 *{box-sizing:border-box}
-html,body{height:100%;margin:0;background:var(--ink);color:#eee;font-family:var(--ui)}
+html,body{height:100%;margin:0;background:var(--ink);color:#eee;font-family:var(--ui);overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+@supports(height:100dvh){html,body{height:100dvh}}
+button{touch-action:manipulation}
 #app{display:flex;flex-direction:column;height:100%}
 header{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:8px 12px;background:var(--bar);border-bottom:1px solid #000}
 header h1{font-size:15px;margin:0 8px 0 0;font-family:var(--font);letter-spacing:.08em}
@@ -158,7 +162,28 @@ textarea{min-height:64px;resize:vertical}
 .sbthumb:hover,.sbthumb.drag{opacity:.85}
 .ch{visibility:hidden}.ch.on{visibility:visible}.rtw{visibility:hidden}#dtext{white-space:pre-wrap}
 @media(max-width:760px){.grail{width:64px}.ggrid{padding:12px;gap:12px}}
-@media(max-width:760px){main{flex-direction:column}#stage{flex:none;height:56vh}#side{max-width:none;min-width:0}}
+@media(max-width:760px){
+main{flex-direction:column}
+#stage{flex:none;height:46vh;height:46dvh}
+#side{max-width:none;min-width:0;flex:1;min-height:0}
+header{gap:6px;padding:6px 8px}
+header h1{font-size:13px;margin:0 4px 0 0}
+header button{padding:6px 9px;font-size:13px}
+#status{display:none}
+body[data-screen=char] header h1{display:none}
+input,textarea,select{font-size:16px!important}
+.modal{max-height:90vh;max-height:90dvh}
+#gallery.show{flex-direction:column-reverse}
+.grail{width:auto;flex-direction:row;overflow-x:auto;overflow-y:hidden}
+.grail button{padding:10px 14px;border-left:0;border-bottom:3px solid transparent;white-space:nowrap;word-break:keep-all}
+.grail button.on{border-bottom-color:var(--acc)}
+#nameplate{left:12px;bottom:52px}
+#nameplate .nm{font-size:clamp(28px,9vw,44px)}
+}
+@media(max-height:480px){
+header{padding:4px 8px}header button{padding:4px 8px}
+.vhead{height:64px}.rail{margin-top:76px}#side .rail .ico{height:64px}.vh-label{font-size:18px}
+}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -309,7 +334,7 @@ function renderGallery(){const g=$("#gallery");g.classList.toggle("show",showLis
   h("div",{class:"grail"},...["ALL",...roles].map(r=>h("button",{class:listRole===r?"on":"",onclick:()=>{listRole=r;render()}},r))));
  const gg=$(".ggrid");gg.addEventListener("wheel",e=>{if(Math.abs(e.deltaX)<Math.abs(e.deltaY)){gg.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});fitGrid()}
 function renderHeader(){const d=(id,on)=>$(id).style.display=on?"":"none";
- d("#bList",!showList);d("#seg",!showList);d("#bZip",showList);d("#bLoad",showList);d("#bBgm",!!S.bgm);$("#bBgm").classList.toggle("on",!bgm.paused);
+ d("#bList",!showList);d("#seg",!showList);document.body.dataset.screen=showList?"list":"char";d("#bZip",showList);d("#bLoad",showList);d("#bBgm",!!S.bgm);$("#bBgm").classList.toggle("on",!bgm.paused);
  $("#mView").classList.toggle("on",mode==="view");$("#mEdit").classList.toggle("on",mode==="edit")}
 function plate(){const c=C();return[h("div",{id:"nameplate"},h("div",{class:"role"},c.role),h("div",{class:"en"},c.en),h("div",{class:"nm"},c.name)),
  h("div",{id:"credit"},c.il&&cr(IC_IL,c.il),c.cv&&cr(IC_CV,c.cv,"＋"))]}
@@ -463,11 +488,17 @@ $("#bBgm").onclick=toggleBgm;
 /* ---------- 起動 ---------- */
 $("#mView").onclick=()=>{if(recorder)return alert("録音中です。先に止めてね");stopAll();mode="view";tab=null;render()};
 $("#mEdit").onclick=()=>{stopAll();mode="edit";render()};
-(()=>{const st=$("#stage");let drag=null;
- st.addEventListener("pointerdown",e=>{if(!canAdjust())return;drag={x:e.clientX,y:e.clientY,o:{...curFit()}};try{st.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault()});
- st.addEventListener("pointermove",e=>{if(!drag)return;const r=st.getBoundingClientRect(),f=curFit(),cl=v=>Math.max(-100,Math.min(100,v));f.x=cl(drag.o.x+(e.clientX-drag.x)/r.width*100);f.y=cl(drag.o.y+(e.clientY-drag.y)/r.height*100);applyArt();syncCtl()});
- const end=()=>{if(drag){drag=null;dirty()}};st.addEventListener("pointerup",end);st.addEventListener("pointercancel",end);
- st.addEventListener("wheel",e=>{if(!canAdjust())return;e.preventDefault();const f=curFit();f.s=Math.min(4,Math.max(.2,f.s*Math.exp(-e.deltaY*.0015)));applyArt();syncCtl();dirty()},{passive:false})})();
+(()=>{const st=$("#stage"),ptr=new Map();let g=null;
+ const pts=()=>[...ptr.values()],dist=()=>{const a=pts();return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)};
+ const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
+ const start=()=>{const f=curFit(),a=pts()[0];g={x:a.x,y:a.y,o:{...f},d:ptr.size>=2?dist():0,s:f.s}};
+ st.addEventListener("pointerdown",e=>{if(!canAdjust())return;ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});try{st.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault();start()});
+ st.addEventListener("pointermove",e=>{if(!ptr.has(e.pointerId)||!g)return;ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});const f=curFit();
+  if(ptr.size>=2&&g.d){f.s=cl(g.s*dist()/g.d,.2,4)}else if(ptr.size===1){const r=st.getBoundingClientRect(),a=pts()[0];f.x=cl(g.o.x+(a.x-g.x)/r.width*100,-100,100);f.y=cl(g.o.y+(a.y-g.y)/r.height*100,-100,100)}
+  applyArt();syncCtl()});
+ const end=e=>{if(!ptr.delete(e.pointerId))return;if(ptr.size>0)start();else{g=null;dirty()}};
+ st.addEventListener("pointerup",end);st.addEventListener("pointercancel",end);
+ st.addEventListener("wheel",e=>{if(!canAdjust())return;e.preventDefault();const f=curFit();f.s=cl(f.s*Math.exp(-e.deltaY*.0015),.2,4);applyArt();syncCtl();dirty()},{passive:false})})();
 attachBar($("#side"),$("main"));
 if(window.ResizeObserver)new ResizeObserver(()=>fitGrid()).observe($("#gallery"));
 $("#bList").onclick=()=>{stopAll();showList=!showList;render()};
