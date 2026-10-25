@@ -107,8 +107,8 @@ textarea{min-height:64px;resize:vertical}
 #side .seg2 button.on{background:var(--acc);color:#000;border-color:var(--acc)}
 .ctl{display:grid;grid-template-columns:56px 1fr 78px;gap:8px;align-items:center;margin:6px 0;font-size:13px}
 .ctl input[type=range]{width:100%;accent-color:#2b2b2d}.ctl input[type=number]{width:100%;padding:4px;border:1px solid #999;background:#fff;color:#111}
-.iprev{width:92px;aspect-ratio:.46;background:#2b2b2d;color:#999;display:grid;place-items:center;overflow:hidden;margin:6px 0;font-size:12px}
-.iprev img{width:100%;height:100%;object-fit:cover}
+.iprev{position:relative;width:92px;aspect-ratio:.46;background:#2b2b2d;color:#999;display:grid;place-items:center;overflow:hidden;margin:6px 0;font-size:12px}
+.iprev img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .chk{display:flex;align-items:center;gap:6px;margin:6px 0;font-size:13px;color:#333}
 #ov{position:fixed;inset:0;background:#000a;display:grid;place-items:center;z-index:50;padding:12px}
 .modal{background:#e6e6e6;color:#111;width:min(460px,100%);max-height:92vh;overflow:auto;padding:16px;border:2px solid #111}
@@ -168,6 +168,54 @@ textarea{min-height:64px;resize:vertical}
 #hdrTog{display:none;position:fixed;left:calc(env(safe-area-inset-left,0px) + 6px);top:calc(env(safe-area-inset-top,0px) + 6px);z-index:45;width:36px;height:36px;padding:0;border-radius:50%;background:#1c1c1ecc;border:1px solid #666;color:#fff;font-size:16px}
 body.hdr-can #hdrTog{display:block}
 body.hdr-hide header{display:none}
+#outfit{display:none;flex:1;min-width:0;position:relative;overflow:hidden;background:linear-gradient(135deg,#e8e8e8,#b9b9b9);color:#111;--ac:#2b2b2d}
+#outfit.show{display:grid;grid-template-columns:1.62fr 1fr}
+.ol{position:relative;min-width:0;overflow:hidden}
+.oart{position:absolute;inset:0}.oart .empty{position:absolute;inset:0;display:grid;place-items:center;color:#666}
+.oart img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;transform-origin:center bottom}
+.oback{position:absolute;left:10px;top:10px;z-index:5;width:60px;height:40px;border-radius:0;background:#2b2b2d;border:0;color:#fff;font-size:22px;box-shadow:0 2px 8px #0005}
+.osd{position:absolute;left:6%;bottom:21%;width:20%;aspect-ratio:1;z-index:3;background:#fffc;box-shadow:0 3px 10px #0003}
+.osd::before{content:"";position:absolute;left:-8%;top:-8%;width:42%;height:36%;background:#2b2b2d;z-index:-1}
+.osd::after{content:"";position:absolute;right:-8%;bottom:-8%;width:42%;height:36%;background:var(--ac);z-index:-1}
+.osdin{position:absolute;inset:0;overflow:hidden;background:repeating-linear-gradient(45deg,#ddd 0 4px,#eee 4px 8px);display:grid;place-items:center;color:#888;font-size:12px}
+.osdin img{width:100%;height:100%;object-fit:contain}
+.ozoom{position:absolute;left:3%;bottom:3%;z-index:4;width:44px;height:44px;padding:0;background:#fff;border:0;border-radius:0;box-shadow:0 2px 8px #0003;display:grid;place-items:center}
+.ozoom i{display:block;line-height:0}.ozoom svg{width:28px;height:28px}
+.ofaces{position:absolute;right:3%;top:7%;width:15%;display:flex;flex-direction:column;gap:3%;z-index:3}
+.ofr{display:grid;min-height:0;background:#fff;padding:7%;box-shadow:0 4px 12px #0004}.ofr.sq{aspect-ratio:1}.ofr.tall{aspect-ratio:.5}
+.ofr .ofin{position:relative;min-height:0;overflow:hidden;background:#ccc}.ofr .ofin img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.oinfo{position:absolute;right:3%;bottom:3%;width:27%;max-height:34%;background:#fff;z-index:3;padding:6px 8px;overflow:hidden;display:flex;flex-direction:column;gap:4px;box-shadow:0 3px 10px #0003;font-size:clamp(10px,1.1vw,14px)}
+.otitle{font-family:var(--font);font-weight:700;font-size:clamp(16px,2.4vw,34px);line-height:1;word-break:break-word}
+.obar{background:#111;color:#fff;padding:3px 6px}
+.odesc{white-space:pre-wrap;line-height:1.5;overflow:auto;color:#222}
+.or{position:relative;display:flex;flex-direction:column;align-items:center;padding:0 4% 3%;min-width:0;min-height:0}
+.otab{width:min(46%,210px);background:var(--ac);color:#fff;text-align:center;padding:10px 8px 24px;clip-path:polygon(0 0,100% 0,100% 72%,50% 100%,0 72%);flex:none}
+.otab small{display:block;font-size:10px;opacity:.85}.otab b{display:block;font-size:clamp(14px,1.6vw,20px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ocar{position:relative;width:100%;flex:1;min-height:0;margin:14px 0 4px;display:flex;justify-content:center}
+.ostrips{display:flex;height:100%;max-width:calc(100% - 64px);overflow-x:auto;scrollbar-width:none}.ostrips::-webkit-scrollbar{display:none}
+.ostrip{flex:none;position:relative;overflow:hidden;width:clamp(44px,6vw,110px);height:100%;padding:0;border:0;border-radius:0;background:#555;opacity:.55}
+.ostrip.sel{width:clamp(110px,14vw,250px);background:#000;opacity:1}.ostrip img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.ocn{position:absolute;left:0;right:0;bottom:0;background:#000b;color:#fff;font-size:13px;text-align:center;padding:6px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.oarr{position:absolute;top:50%;transform:translateY(-50%);width:34px;height:40px;padding:0;background:transparent;border:0;color:#fff;font-size:22px;text-shadow:0 1px 4px #000a}
+.oarr.l{left:0}.oarr.r{right:0}
+.ocap{font-size:clamp(14px,1.6vw,22px);margin:6px 0}.oacc{color:#1a73b8;font-weight:700}
+.owear{width:min(86%,360px);padding:14px;background:#2b2b2d;color:#fff;border:0;border-radius:0;font-size:18px;box-shadow:0 3px 8px #0004}
+.owear.on{background:#6aaed6}.owear:disabled{cursor:default}
+.onote{font-size:12px;color:#444;margin:8px 0 0;text-align:center}
+#zoom{position:fixed;inset:0;z-index:70;background:#000d;display:grid;place-items:center;touch-action:none;overflow:hidden}
+#zoom img{max-width:96vw;max-height:96vh;user-select:none;-webkit-user-drag:none}
+.zclose{position:absolute;right:14px;top:14px;width:44px;height:44px;padding:0;border-radius:50%;font-size:24px;background:#222c;color:#fff}
+.ghint{margin-right:auto;align-self:center;font-size:12px;color:#bbb}
+.ggrid.custom .tile:not(.add){cursor:grab;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.tile.dragging{opacity:.88;box-shadow:0 12px 28px #000a;transition:none}
+.modal button.danger{background:#7a2a22;border-color:#7a2a22}
+.iprev.sq{aspect-ratio:1}.iprev.sdp img{object-fit:contain}
+.chiprow{display:flex;gap:6px;align-items:stretch;margin-bottom:8px}
+.chips{flex:1;min-width:0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+#side .ed .chips button{flex:none;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:0}
+#side .ed .chips button.on{background:var(--acc);color:#000;border-color:var(--acc)}
+#side .ed .chipadd{flex:none;width:40px;padding:0;border-radius:0}
+@media(max-width:760px){#outfit.show{grid-template-columns:1fr;grid-template-rows:62vh auto;grid-template-rows:62dvh auto;overflow-y:auto}.ol{height:62vh;height:62dvh}.or{height:auto;padding-top:12px}.ocar{height:38vh;flex:none}.oinfo{width:44%;max-height:34%}.ofaces{width:22%}.osd{width:28%}}
 @media(max-width:760px){.grail{width:64px}.ggrid{padding:12px;gap:12px}}
 @media(max-width:760px){
 main{flex-direction:column}
@@ -186,10 +234,16 @@ input,textarea,select{font-size:16px!important}
 .grail button.on{border-bottom-color:var(--acc)}
 #nameplate{left:12px;bottom:52px}
 #nameplate .nm{font-size:clamp(28px,9vw,44px)}
+.pt{font-size:13.5px;line-height:1.75;padding:0 8px 14px}
+.ph{font-size:15px;padding:5px 10px}
+.vbtn .tt{font-size:14px;padding:11px 12px}
+.vbtn .ic{width:38px}
+.vh-label{font-size:17px;padding-right:12px}
 }
 @media(max-height:480px){
 header{padding:4px 8px}header button{padding:4px 8px}
 .vhead{height:64px}.rail{margin-top:76px}#side .rail .ico{height:64px}.vh-label{font-size:18px}
+.pt{font-size:14px;line-height:1.7}.ph{font-size:16px;padding:4px 12px}.vbtn .tt{font-size:15px;padding:9px 14px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -214,6 +268,7 @@ header{padding:4px 8px}header button{padding:4px 8px}
   <section id="stage" aria-label="立ち絵"></section>
   <aside id="side"></aside>
   <section id="gallery" aria-label="キャラクター一覧"></section>
+  <section id="outfit" aria-label="コーデ"></section>
 </main>
 </div>
 <script>
@@ -256,23 +311,33 @@ async function readZip(buf){const u=new Uint8Array(buf),dv=new DataView(buf),dec
  return out}
 const MIME={png:"image/png",jpg:"image/jpeg",jpeg:"image/jpeg",webp:"image/webp",gif:"image/gif",webm:"audio/webm",mp3:"audio/mpeg",wav:"audio/wav",ogg:"audio/ogg",m4a:"audio/mp4",mp4:"audio/mp4"};
 const extOf=b=>{const t=(b.type||"").split(";")[0];return Object.keys(MIME).find(k=>MIME[k]===t&&k!=="jpeg"&&k!=="mp4")||"bin"};
-async function exportZip(){const files=[],enc=new TextEncoder();
+async function exportZip(idx){const files=[],enc=new TextEncoder(),list=idx==null?S.chars:[S.chars[idx]],safe=n=>(n||"character").replace(/[\\/:*?"<>|]+/g,"_");
  const put=async(name,b)=>{if(!b)return null;files.push({name,data:new Uint8Array(await b.arrayBuffer())});return name};
  const man={app:"voice-viewer",version:1,chars:[]};
- for(let i=0;i<S.chars.length;i++){const c=S.chars[i],o={...c,img:null,img2:null,voices:[]};
-  if(c.img)o.img=await put(`media/c${i}_img.${extOf(c.img)}`,c.img);
-  if(c.img2)o.img2=await put(`media/c${i}_img2.${extOf(c.img2)}`,c.img2);
+ for(let i=0;i<list.length;i++){const c=list[i],o={...c,voices:[]};delete o.img;delete o.img2;delete o.fit;delete o.fit2;delete o.icon;
+  const pk=async(t,k,key)=>t[key]?await put(`media/c${i}_o${k}_${key}.${extOf(t[key])}`,t[key]):null;
+  o.outfits=[];for(let k=0;k<c.outfits.length;k++){const t=c.outfits[k];o.outfits.push({...t,img:await pk(t,k,"img"),img2:await pk(t,k,"img2"),sd:await pk(t,k,"sd")})}
   for(let j=0;j<c.voices.length;j++){const v=c.voices[j];o.voices.push({id:v.id,title:v.title,text:v.text,dur:v.dur,audio:v.audio?await put(`media/c${i}_v${j}.${extOf(v.audio)}`,v.audio):null})}
   man.chars.push(o)}
- man.settings=S.set;man.roleIcons={};for(const[k,b]of Object.entries(S.roleIcons)){if(b)man.roleIcons[k]=await put("media/role_"+Object.keys(man.roleIcons).length+"."+extOf(b),b)}
- if(S.bgm){man.bgm=await put("media/bgm."+extOf(S.bgm),S.bgm);man.bgmName=S.bgmName||""}
+ if(idx==null){man.settings=S.set;man.roleIcons={};for(const[k,b]of Object.entries(S.roleIcons)){if(b)man.roleIcons[k]=await put("media/role_"+Object.keys(man.roleIcons).length+"."+extOf(b),b)}
+ if(S.bgm){man.bgm=await put("media/bgm."+extOf(S.bgm),S.bgm);man.bgmName=S.bgmName||""}}
  files.unshift({name:"project.json",data:enc.encode(JSON.stringify(man,null,1))});
- const a=h("a",{href:URL.createObjectURL(makeZip(files)),download:"kyara_theater_project.zip"});a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);track("zip_export",{characters:S.chars.length})}
+ const a=h("a",{href:URL.createObjectURL(makeZip(files)),download:idx==null?"kyara_theater_project.zip":safe(list[0].name)+"_kyara_theater.zip"});a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);track("zip_export",{characters:list.length,scope:idx==null?"all":"character"})}
+function askImport(n){closeSettings();return new Promise(res=>{const ov=h("div",{id:"ov"});ov.dataset.k="import";document.body.append(ov);const done=v=>{ov.remove();res(v)};
+ ov.addEventListener("click",e=>{if(e.target===ov)done(null)});
+ ov.append(h("div",{class:"modal",role:"dialog"},h("h2",{},"ZIPの読み込み"),h("p",{class:"hint"},"ZIPには、キャラが"+n+"人入っています。どう読み込みますか?"),
+  h("div",{class:"row"},h("button",{onclick:()=>done("add")},"今のデータに追加する"),h("button",{class:"danger",onclick:()=>done("replace")},"すべて置き換える"),h("button",{onclick:()=>done(null)},"キャンセル"))))})}
 async function importZip(file){try{const z=await readZip(await file.arrayBuffer());if(!z["project.json"])throw new Error("project.json が見つかりません");
  const man=JSON.parse(new TextDecoder().decode(z["project.json"])),blob=n=>{if(!n||!z[n])return null;return new Blob([z[n]],{type:MIME[n.split(".").pop()]||""})};
- if(!confirm("今のデータをZIPの内容で置き換えます。よろしいですか?"))return;
- S={bgm:blob(man.bgm),bgmName:man.bgmName||"",set:man.settings||{},roleIcons:Object.fromEntries(Object.entries(man.roleIcons||{}).map(([k,v])=>[k,blob(v)])),chars:man.chars.map(c=>({...c,profile:c.profile||[],img:blob(c.img),img2:blob(c.img2),voices:c.voices.map(v=>({...v,audio:blob(v.audio)}))})),cur:0};
- S.chars.forEach(fixChar);fixSet();loadBgm();if(!S.chars.length)S.chars.push(newChar());stopAll();render();dirty();track("zip_import",{characters:S.chars.length})}catch(e){alert("読み込み失敗: "+e.message)}}
+ const mapChar=c=>({...c,profile:c.profile||[],img:blob(c.img),img2:blob(c.img2),outfits:c.outfits?c.outfits.map(t=>({...t,img:blob(t.img),img2:blob(t.img2),sd:blob(t.sd)})):undefined,voices:c.voices.map(v=>({...v,audio:blob(v.audio)}))});
+ const mode=await askImport(man.chars.length);if(!mode)return;
+ const roleIcons=Object.fromEntries(Object.entries(man.roleIcons||{}).map(([k,v])=>[k,blob(v)]));
+ if(mode==="replace"){S={bgm:blob(man.bgm),bgmName:man.bgmName||"",set:man.settings||{},roleIcons,chars:man.chars.map(mapChar),cur:0,order:[],listSort:S.listSort}}
+ else{const add=man.chars.map(mapChar),ids=new Set(S.chars.map(c=>c.id));add.forEach(c=>{if(!c.id||ids.has(c.id))c.id=uid();ids.add(c.id)});
+  S.cur=S.chars.length;S.chars.push(...add);
+  for(const k in roleIcons){if(roleIcons[k]&&!S.roleIcons[k])S.roleIcons[k]=roleIcons[k]}
+  if(!S.bgm&&man.bgm){S.bgm=blob(man.bgm);S.bgmName=man.bgmName||""}}
+ S.chars.forEach(fixChar);fixSet();loadBgm();if(!S.chars.length)S.chars.push(newChar());if(S.cur>=S.chars.length)S.cur=0;stopAll();showList=true;render();dirty();track("zip_import",{characters:man.chars.length,mode})}catch(e){alert("読み込み失敗: "+e.message)}}
 
 /* ---------- 再生 ---------- */
 let rafId=0,startT=0,estDur=2500;
@@ -307,41 +372,78 @@ async function startRec(i){try{const st=await navigator.mediaDevices.getUserMedi
 /* ---------- 描画 ---------- */
 const SHOW_ROLE_ICON=false; // 職業アイコン表示の切り替え(trueで再開)
 const roleSrc=r=>{const b=(S.roleIcons||{})[r];return b?url(b):""};
-let showList=false,tab=null,etab="basic",fitT="img",ctlSync=[];
+let showList=false,tab=null,etab="basic",fitT="img",ctlSync=[],showOutfit=false,oview=0,oe=0,noRestore=false;
 const fitDef=()=>({s:1,x:0,y:0,flip:false}),iconDef=()=>({s:1,x:50,y:15});
+const fdFace=()=>({s:1.6,x:50,y:14});
+function fixOutfit(o){o.id||(o.id=uid());if(o.name==null)o.name="コーデ";if(o.label==null)o.label="OUTFIT";["series","illust","desc"].forEach(k=>{if(o[k]==null)o[k]=""});o.accent||(o.accent="#2b2b2d");
+ if(o.img===undefined)o.img=null;if(o.img2===undefined)o.img2=null;if(o.sd===undefined)o.sd=null;o.fit||(o.fit=fitDef());o.fit2||(o.fit2=fitDef());o.icon||(o.icon=iconDef());o.f1||(o.f1=fdFace());o.f2||(o.f2=fdFace());o.sdfit||(o.sdfit=fitDef());if(o.fit2c===undefined)o.fit2c=!(o.fit2.s===1&&o.fit2.x===0&&o.fit2.y===0&&!o.fit2.flip);return o}
+const outfitDef=n=>fixOutfit({name:"コーデ"+n});
+function wear(c){const o=c.outfits[c.outfitCur]||c.outfits[0];c.img=o.img;c.img2=o.img2;c.fit=o.fit;c.fit2=o.fit2c?o.fit2:o.fit;c.icon=o.icon}
 function fixChar(c){c.profile||(c.profile=[]);c.fit||(c.fit=fitDef());c.fit2||(c.fit2=fitDef());c.icon||(c.icon=iconDef());c.bg||(c.bg="");
+ if(!c.outfits||!c.outfits.length){c.outfits=[{name:"DEFAULT",label:"DEFAULT OUTFIT",img:c.img||null,img2:c.img2||null,fit:c.fit,fit2:c.fit2,icon:c.icon}];c.outfitCur=0}
+ c.outfits.forEach(fixOutfit);if(!(c.outfitCur>=0&&c.outfitCur<c.outfits.length))c.outfitCur=0;wear(c);
  if(c.fmtv!==2){c.profile.forEach(p=>{p.text=(p.text||"").replace(/'''([\s\S]+?)'''/g,"~~$1~~").replace(/''([\s\S]+?)''/g,"**$1**")});c.fmtv=2}return c}
-const editFit=()=>!showList&&mode==="edit"&&etab==="basic";
-function curArt(){const c=C(),alt=c.img2&&(playing!=null||(editFit()&&fitT==="img2"));return alt?{b:c.img2,f:c.fit2}:{b:c.img,f:c.fit}}
+const editFit=()=>!showList&&mode==="edit"&&etab==="outfit";
+const eo=()=>{const c=C();return c.outfits[Math.min(oe,c.outfits.length-1)]};
+function curArt(){const c=C();if(editFit()){const o=eo(),alt=o.img2&&fitT==="img2";return alt?{b:o.img2,f:o.fit2c?o.fit2:o.fit}:{b:o.img,f:o.fit}}
+ const alt=c.img2&&playing!=null;return alt?{b:c.img2,f:c.fit2}:{b:c.img,f:c.fit}}
 const ftr=f=>`translate(${f.x}%,${f.y}%) scale(${f.flip?-f.s:f.s},${f.s})`;
 function applyArt(){const a=$("#stage img.art");if(!a)return;const{b,f}=curArt();a.src=url(b);a.style.transform=ftr(f)}
 const applyIcon=(i,o)=>{i.style.objectPosition=o.x+"% "+o.y+"%";i.style.transformOrigin=o.x+"% "+o.y+"%";i.style.transform="scale("+o.s+")"};
+const sdImg=(b,f)=>{const i=h("img",{src:url(b),alt:""});i.style.transform=ftr(f);return i};
+const faceImg=(b,o)=>{const i=h("img",{src:url(b),alt:""});applyIcon(i,o);return i};
 const iconImg=c=>{const i=h("img",{src:url(c.img),alt:""});applyIcon(i,c.icon);return i};
-const curFit=()=>fitT==="img2"?C().fit2:C().fit;
-const canAdjust=()=>editFit()&&fitT!=="icon"&&!!curArt().b;
+const curFit=()=>fitT==="img2"&&eo().fit2c?eo().fit2:eo().fit;
+const canAdjust=()=>editFit()&&(fitT==="img"||(fitT==="img2"&&eo().fit2c))&&!!curArt().b;
 const syncCtl=()=>ctlSync.forEach(f=>f());
 const IC_IL='<svg viewBox="0 0 24 24"><path d="M9 2h6v2h3a1 1 0 0 1 1 1v7h-2V6H6v14h5v2H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3V2zm2 2v1h2V4h-2zM8 10h8v2H8v-2zm0 3h4v2H8v-2zm9.5 1a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM13 22c0-2 2-3.5 4.5-3.5S22 20 22 22h-9z"/></svg>';
 const IC_CV='<svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3zM7 11h2a3 3 0 0 0 6 0h2a5 5 0 0 1-4 4.9V19h3v2H8v-2h3v-3.1A5 5 0 0 1 7 11z"/></svg>';
-const TABS=[{k:"profile",label:"プロファイル",ic:IC_IL},{k:"voice",label:"ボイス",ic:IC_CV}];
+const IC_OF='<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2.5a3.2 3.2 0 0 0-3.2 3.2h2.2a1 1 0 1 1 1.6.8c-.5.4-1.1.8-1.1 1.7v1L3.4 15a1.7 1.7 0 0 0 1 3h15.2a1.7 1.7 0 0 0 1-3L13 9.2v-.6c1.2-.6 2.2-1.6 2.2-2.9A3.2 3.2 0 0 0 12 2.5zM12 11.6l6.6 4.6H5.4z"/></svg>';
+const IC_ZM='<svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5" fill="none" stroke="#222" stroke-width="2"/><path d="M15 15l6 6M7.5 10h5M10 7.5v5" stroke="#222" stroke-width="2" stroke-linecap="round" fill="none"/></svg>';
+const TABS=[{k:"profile",label:"プロファイル",ic:IC_IL},{k:"voice",label:"ボイス",ic:IC_CV},{k:"outfit",label:"コーデ",ic:IC_OF}];
+function openTab(k){if(k==="outfit"){track("outfit_open");showOutfit=true;oview=C().outfitCur}else tab=k;render()}
 const cr=(ic,t,mark)=>h("div",{class:"cr"},h("i",{innerHTML:ic}),h("span",{},t),mark&&h("b",{},mark));
 const icoBox=(ic,cls="ico")=>[h("i",{innerHTML:ic}),h("b",{},"＋")];
 
 let listSort="reg",listRole="ALL";
 function fitGrid(){const gg=$(".ggrid");if(!gg)return;const cs=getComputedStyle(gg),ph=parseFloat(cs.paddingTop)+parseFloat(cs.paddingBottom),gap=parseFloat(cs.rowGap)||16;
  const ch=Math.max(120,(gg.offsetHeight-ph-12-gap)/2);gg.style.setProperty("--ch",ch+"px");gg.style.setProperty("--cw",ch*.46+"px")}
-function renderGallery(){const g=$("#gallery");g.classList.toggle("show",showList);$("#stage").style.display=$("#side").style.display=showList?"none":"";if(!showList)return;
+let dragActive=false;
+function enableDrag(gg,items){const tiles=[...gg.querySelectorAll(".tile:not(.add)")];
+ gg.addEventListener("touchmove",e=>{if(dragActive)e.preventDefault()},{passive:false});
+ tiles.forEach((el,idx)=>{el.addEventListener("contextmenu",e=>e.preventDefault());
+  el.addEventListener("pointerdown",e=>{if(e.button>0)return;const touch=e.pointerType==="touch",x0=e.clientX,y0=e.clientY,sl0=gg.scrollLeft;let active=false,timer=null,asc=null,lx=x0,ly=y0;
+   const begin=()=>{active=true;dragActive=true;el.classList.add("dragging");el.style.pointerEvents="none";el.style.zIndex=30;
+    asc=setInterval(()=>{const r=gg.getBoundingClientRect();if(lx<r.left+60)gg.scrollLeft-=16;else if(lx>r.right-60)gg.scrollLeft+=16;pos()},30)};
+   const pos=()=>{el.style.transform=`translate(${lx-x0+(gg.scrollLeft-sl0)}px,${ly-y0}px)`};
+   const mv=ev=>{lx=ev.clientX;ly=ev.clientY;if(!active){const dist=Math.hypot(lx-x0,ly-y0);if(touch){if(dist>8){clearTimeout(timer);cleanup()}}else if(dist>6)begin();return}pos()};
+   const cleanup=()=>{clearTimeout(timer);clearInterval(asc);document.removeEventListener("pointermove",mv);document.removeEventListener("pointerup",up);document.removeEventListener("pointercancel",cancel)};
+   const cancel=()=>{cleanup();dragActive=false;if(active)render()};
+   const up=ev=>{const was=active;cleanup();dragActive=false;if(!was)return;
+    const t=document.elementFromPoint(ev.clientX,ev.clientY),tg=t&&t.closest?t.closest(".tile"):null;el.style.pointerEvents="";
+    const stop=c=>{c.stopPropagation();c.preventDefault()};document.addEventListener("click",stop,true);setTimeout(()=>document.removeEventListener("click",stop,true),80);
+    const to=tg&&tg!==el&&!tg.classList.contains("add")?tiles.indexOf(tg):-1;
+    if(to>=0){const ids=items.map(x=>x.c.id),[m]=ids.splice(idx,1);ids.splice(to,0,m);S.order=ids;dirty();track("char_reorder")}
+    render()};
+   document.addEventListener("pointermove",mv);document.addEventListener("pointerup",up);document.addEventListener("pointercancel",cancel);
+   if(touch)timer=setTimeout(begin,380)})})}
+function renderGallery(){const g=$("#gallery");g.classList.toggle("show",showList);$("#stage").style.display=$("#side").style.display=(showList||showOutfit)?"none":"";if(!showList)return;
  const roles=[...new Set(S.chars.map(c=>c.role).filter(Boolean))];if(listRole!=="ALL"&&!roles.includes(listRole))listRole="ALL";
  const items=S.chars.map((c,i)=>({c,i})).filter(x=>listRole==="ALL"||x.c.role===listRole);
  if(listSort==="name")items.sort((a,b)=>(a.c.name||"").localeCompare(b.c.name||"","ja"));
- const tile=({c,i})=>h("button",{class:"tile"+(i===S.cur?" cur":""),title:c.name,onclick:()=>{S.cur=i;showList=false;tab=null;stopAll();render();dirty()}},
+ else if(listSort==="custom"){const pos=new Map((S.order||[]).map((id,k)=>[id,k])),key=x=>pos.has(x.c.id)?pos.get(x.c.id):1e9+x.i;items.sort((a,b)=>key(a)-key(b))}
+ const canDrag=listSort==="custom"&&listRole==="ALL";
+ const tile=({c,i})=>h("button",{class:"tile"+(i===S.cur?" cur":""),title:c.name,onclick:()=>{S.cur=i;showList=false;showOutfit=false;tab=null;stopAll();render();dirty()}},
   h("div",{class:"art"},c.img?iconImg(c):"立ち絵なし"),c.role&&h("span",{class:"cls"},c.role),
   SHOW_ROLE_ICON&&roleSrc(c.role)&&h("div",{class:"rk"},h("img",{src:roleSrc(c.role),alt:c.role})),h("div",{class:"band"},h("span",{class:"nm"},c.name||"(名前なし)")));
  const add=h("button",{class:"tile add",title:"キャラを追加",onclick:()=>{track("character_add");S.chars.push(newChar());S.cur=S.chars.length-1;showList=false;tab=null;mode="edit";etab="basic";render();dirty()}},h("span",{class:"plus"},"＋"));
  g.replaceChildren(h("div",{class:"gmain"},
-  h("div",{class:"gtop"},...[["reg","登録順"],["name","名前順"]].map(([k,l])=>h("button",{class:listSort===k?"on":"",onclick:()=>{listSort=k;render()}},l))),
-  h("div",{class:"ggrid"},...items.map(tile),add)),
+  h("div",{class:"gtop"},listSort==="custom"?h("span",{class:"ghint"},canDrag?"ドラッグ(スマホは長押し)で並べ替え":"並べ替えは、右の「ALL」を選んでからできます"):null,
+   ...[["reg","登録順"],["name","名前順"],["custom","カスタム"]].map(([k,l])=>h("button",{class:listSort===k?"on":"",onclick:()=>{if(k==="custom"&&!(S.order&&S.order.length))S.order=S.chars.map(c=>c.id);listSort=k;S.listSort=k;dirty();render()}},l))),
+  h("div",{class:"ggrid"+(canDrag?" custom":"")},...items.map(tile),add)),
   h("div",{class:"grail"},...["ALL",...roles].map(r=>h("button",{class:listRole===r?"on":"",onclick:()=>{listRole=r;render()}},r))));
- const gg=$(".ggrid");gg.addEventListener("wheel",e=>{if(Math.abs(e.deltaX)<Math.abs(e.deltaY)){gg.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});fitGrid()}
+ const gg=$(".ggrid");gg.addEventListener("wheel",e=>{if(Math.abs(e.deltaX)<Math.abs(e.deltaY)){gg.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});fitGrid();
+ if(canDrag)enableDrag(gg,items)}
 function renderHeader(){const d=(id,on)=>$(id).style.display=on?"":"none";
  d("#bList",!showList);d("#seg",!showList);document.body.dataset.screen=showList?"list":"char";d("#bZip",showList);d("#bLoad",showList);d("#bBgm",!!S.bgm);d("#bFs",!!document.documentElement.requestFullscreen);$("#bFs").classList.toggle("on",!!document.fullscreenElement);$("#bBgm").classList.toggle("on",!bgm.paused);
  $("#mView").classList.toggle("on",mode==="view");$("#mEdit").classList.toggle("on",mode==="edit")}
@@ -349,16 +451,16 @@ function plate(){const c=C();return[h("div",{id:"nameplate"},h("div",{class:"rol
  h("div",{id:"credit"},c.il&&cr(IC_IL,c.il),c.cv&&cr(IC_CV,c.cv,"＋"))]}
 function refreshPlate(){const[a,b]=plate();$("#nameplate")?.replaceWith(a);$("#credit")?.replaceWith(b)}
 function renderStage(){const c=C(),st=$("#stage");st.replaceChildren();
- if(c.img)st.append(h("img",{class:"art",src:url(c.img),alt:c.name}));else st.append(h("div",{class:"empty"},"立ち絵がありません。「作る」モードの「基本」で画像を追加してね"));
+ if(curArt().b)st.append(h("img",{class:"art",src:url(curArt().b),alt:c.name}));else st.append(h("div",{class:"empty"},"立ち絵がありません。「作る」モードの「コーデ」タブで画像を追加してね"));
  st.append(...plate(),h("div",{id:"dialog"},h("span",{class:"tag"},"VOICE"),h("div",{id:"dtext"})));applyArt();st.style.background=c.bg||""}
 
 /* 見るモード: カード(格納)→タブ展開 */
 function renderView(){const c=C(),side=$("#side");
- if(!tab){side.className="cards";side.replaceChildren(...TABS.map(t=>h("button",{class:"card-tab",onclick:()=>{tab=t.k;render()}},h("span",{class:"ico"},...icoBox(t.ic)),h("span",{class:"ct-label"},t.label))));return}
+ if(!tab){side.className="cards";side.replaceChildren(...TABS.map(t=>h("button",{class:"card-tab",onclick:()=>openTab(t.k)},h("span",{class:"ico"},...icoBox(t.ic)),h("span",{class:"ct-label"},t.label))));return}
  side.className="open";const T=TABS.find(x=>x.k===tab);
  const head=h("div",{class:"vhead"},h("button",{class:"ico",title:"閉じる",onclick:()=>{tab=null;render()}},...icoBox(T.ic)),h("span",{class:"vh-line"}),h("span",{class:"vh-label"},T.label));
  const body=h("div",{class:"vbody"},tab==="voice"?voiceList(c):profileView(c));
- const rail=h("div",{class:"rail"},...TABS.filter(t=>t.k!==tab).map(t=>h("button",{class:"ico",title:t.label,onclick:()=>{tab=t.k;render()}},...icoBox(t.ic))));
+ const rail=h("div",{class:"rail"},...TABS.filter(t=>t.k!==tab).map(t=>h("button",{class:"ico",title:t.label,onclick:()=>openTab(t.k)},...icoBox(t.ic))));
  side.replaceChildren(h("div",{class:"vmain"},head,body),rail);attachBar(body,$(".vmain"));paintList()}
 function voiceList(c){return c.voices.length?c.voices.map((v,i)=>h("button",{class:"vbtn",onclick:()=>play(i)},h("span",{class:"ic"},"▶"),h("span",{class:"tt"},v.title||"(無題)"),!v.audio&&h("span",{class:"noa"},"音声なし"),h("span",{class:"bar"}))):h("p",{class:"hint"},"ボイスがありません。「作る」モードの「ボイス」で追加してね。")}
 function profileView(c){return c.profile.length?c.profile.map(p=>h("div",{},h("div",{class:"ph"},p.title||"(見出しなし)"),h("div",{class:"pt"},...fmt(p.text||"")))):h("p",{class:"hint"},"プロファイルがありません。「作る」モードの「プロファイル」で追加してね。")}
@@ -392,35 +494,54 @@ const field=(label,o,k,ph)=>h("div",{},h("label",{},label),inp(o,k,ph,refreshPla
 const ctrl=(a,i)=>h("div",{class:"row tight"},h("button",{title:"上へ",disabled:i===0,onclick:()=>{[a[i],a[i-1]]=[a[i-1],a[i]];render();dirty()}},"↑"),h("button",{title:"下へ",disabled:i===a.length-1,onclick:()=>{[a[i],a[i+1]]=[a[i+1],a[i]];render();dirty()}},"↓"),h("button",{class:"danger",onclick:()=>{a.splice(i,1);render();dirty()}},"削除"));
 
 /* 作るモード: 基本 / プロファイル / ボイス */
-const ETABS=[["basic","基本"],["profile","プロファイル"],["voice","ボイス"]];
+const ETABS=[["basic","基本"],["outfit","コーデ"],["profile","プロファイル"],["voice","ボイス"]];
 function renderEdit(){const c=C(),side=$("#side"),sc=side.scrollTop;ctlSync=[];side.className="edit";
- const bar=h("div",{class:"etabs"},...ETABS.map(([k,l])=>h("button",{class:etab===k?"on":"",onclick:()=>{etab=k;render();$("#side").scrollTop=0}},l)));
- side.replaceChildren(h("div",{class:"ed"},bar,h("div",{class:"ed-body"},etab==="basic"?editBasic(c):etab==="profile"?editProfile(c):editVoice(c))));side.scrollTop=sc}
-function editBasic(c){const imgBlock=(k,label,hint)=>{const set=f=>{c[k]=f;render();dirty()};
-  const z=h("div",{class:"drop",tabIndex:0,onclick:()=>pick("image/*",set)},c[k]?h("img",{src:url(c[k]),alt:""}):h("span",{},"クリック、またはここに画像をドロップ"));dropable(z,"image/",set);
-  return h("div",{},h("label",{},label),z,c[k]&&h("div",{class:"row"},h("button",{onclick:()=>{c[k]=null;render();dirty()}},"外す")),hint&&h("p",{class:"hint"},hint))};
- return h("div",{},
+ const bar=h("div",{class:"etabs"},...ETABS.map(([k,l])=>h("button",{class:etab===k?"on":"",onclick:()=>{etab=k;$("#side").scrollTop=0;render()}},l)));
+ side.replaceChildren(h("div",{class:"ed"},bar,h("div",{class:"ed-body"},etab==="basic"?editBasic(c):etab==="outfit"?editOutfitTab(c):etab==="profile"?editProfile(c):editVoice(c))));side.scrollTop=sc;requestAnimationFrame(()=>requestAnimationFrame(()=>{if(!noRestore)side.scrollTop=sc}))}
+function editBasic(c){return h("div",{},
   h("div",{class:"card"},h("h3",{},"名前など(左の画面にすぐ反映されます)"),field("名前",c,"name"),h("div",{class:"row two"},field("英語名",c,"en"),roleField(c)),h("div",{class:"row two"},field("イラスト",c,"il"),field("CV",c,"cv"))),
-  h("div",{class:"card"},h("h3",{},"立ち絵"),h("div",{class:"imgs"},imgBlock("img","立ち絵"),imgBlock("img2","セリフ中の立ち絵","任意。再生中だけ差し替わります"))),
-  fitCard(c),
+  h("div",{class:"card"},h("h3",{},"背景"),h("div",{class:"row"},h("label",{},"背景色"),h("input",{type:"color",value:c.bg||"#cccccc",oninput:e=>{c.bg=e.target.value;$("#stage").style.background=c.bg;dirty()}}),h("button",{onclick:()=>{c.bg="";render();dirty()}},"既定に戻す")),
+   h("p",{class:"hint"},"立ち絵や表示位置は、「コーデ」タブで設定します。")),
+  h("div",{class:"card"},h("h3",{},"書き出し"),h("button",{onclick:()=>exportZip(S.cur)},"このキャラだけZIPで書き出す"),h("p",{class:"hint"},"BGMや設定は含まず、このキャラだけが入ったZIPになります。読み込むと、別のデータにも追加できます。")),
   h("div",{class:"card"},h("button",{class:"danger",onclick:()=>{if(S.chars.length<2)return alert("最後の1人は削除できません");if(confirm(`「${c.name}」を削除しますか?`)){S.chars.splice(S.cur,1);S.cur=0;showList=true;render();dirty()}}},"このキャラを削除")))}
 function roleField(c){const f=field("クラス表示",c,"role","前衛");f.querySelector("input").setAttribute("list","rolelist");
  f.append(h("datalist",{id:"rolelist"},...[...new Set(S.chars.map(x=>x.role).filter(Boolean))].map(n=>h("option",{value:n}))));return f}
-function fitCard(c){const T=[["img","立ち絵"],["img2","セリフ中"],["icon","一覧アイコン"]],isI=fitT==="icon",o=isI?c.icon:fitT==="img2"?c.fit2:c.fit;
- const pv=isI?h("div",{class:"iprev"},c.img?iconImg(c):"画像なし"):null;
- const after=()=>{applyArt();if(pv){const i=pv.querySelector("img");i&&applyIcon(i,c.icon)}};
- const ctl=(k,label,min,max,step)=>{const r=h("input",{type:"range",min,max,step,value:o[k]}),n=h("input",{type:"number",min,max,step,value:+o[k].toFixed(2)});
+function fitCard(ot){const T=[["img","立ち絵"],["img2","セリフ中"],["icon","一覧"],["f1","顔1"],["f2","顔2"],["sd","SD"]],isI=fitT==="icon"||fitT==="f1"||fitT==="f2";
+ const o=fitT==="icon"?ot.icon:fitT==="f1"?ot.f1:fitT==="f2"?ot.f2:fitT==="sd"?ot.sdfit:fitT==="img2"?(ot.fit2c?ot.fit2:ot.fit):ot.fit;
+ const dis=fitT==="img2"&&!ot.fit2c;
+ const pv=isI?h("div",{class:"iprev"+(fitT==="f1"?" sq":"")},ot.img?faceImg(ot.img,o):"画像なし"):fitT==="sd"?h("div",{class:"iprev sq sdp"},ot.sd?sdImg(ot.sd,ot.sdfit):"SD画像なし"):null;
+ const after=()=>{if(fitT==="sd"){const i=pv&&pv.querySelector("img");if(i)i.style.transform=ftr(o);return}applyArt();if(pv){const i=pv.querySelector("img");i&&applyIcon(i,o)}};
+ const ctl=(k,label,min,max,step)=>{const r=h("input",{type:"range",min,max,step,value:o[k],disabled:dis}),n=h("input",{type:"number",min,max,step,value:+o[k].toFixed(2),disabled:dis});
   const set=v=>{v=Math.min(max,Math.max(min,+v));if(isNaN(v))return;o[k]=v;r.value=v;n.value=+v.toFixed(2);after();dirty()};
   r.oninput=()=>set(r.value);n.onchange=()=>set(n.value);ctlSync.push(()=>{r.value=o[k];n.value=+o[k].toFixed(2)});
   return h("div",{class:"ctl"},h("span",{},label),r,n)};
  return h("div",{class:"card"},h("h3",{},"表示位置・ズーム"),
-  h("div",{class:"seg2"},...T.map(([k,l])=>h("button",{class:fitT===k?"on":"",onclick:()=>{fitT=k;render()}},l))),
-  fitT==="img2"&&!c.img2?h("p",{class:"hint"},"「セリフ中の立ち絵」を設定すると調整できます。"):null,
+  h("div",{class:"seg2",style:"flex-wrap:wrap"},...T.map(([k,l])=>h("button",{class:fitT===k?"on":"",onclick:()=>{fitT=k;render()}},l))),
+  fitT==="img2"&&ot.img2?h("label",{class:"chk"},h("input",{type:"checkbox",checked:!ot.fit2c,onchange:e=>{if(e.target.checked){ot.fit2c=false}else{Object.assign(ot.fit2,ot.fit);ot.fit2c=true}wear(C());render();dirty()}})," 立ち絵と同じ設定を使う(自動で引き継ぐ)"):null,
+  fitT==="img2"&&!ot.img2?h("p",{class:"hint"},"「セリフ中の立ち絵」を設定すると調整できます。"):null,
+  fitT==="sd"?h("p",{class:"hint"},"コーデ画面の左下のSD枠の中での、位置と大きさです。"+(ot.sd?"":"先に、SD画像を設定してね。")):null,
   pv,ctl("s","ズーム",isI?1:.2,isI?5:4,.01),ctl("x","横位置",isI?0:-100,100,isI?1:.5),ctl("y","縦位置",isI?0:-100,100,isI?1:.5),
-  isI?null:h("label",{class:"chk"},h("input",{type:"checkbox",checked:!!o.flip,onchange:e=>{o.flip=e.target.checked;after();dirty()}})," 左右反転"),
-  h("div",{class:"row"},h("button",{onclick:()=>{Object.assign(o,isI?iconDef():fitDef());render();dirty()}},"この設定をリセット")),
-  isI?h("p",{class:"hint"},"一覧のアイコンの切り抜き位置です。"):h("p",{class:"hint"},"左の画面を、ドラッグで移動、ホイールでズームもできます。"),
-  h("div",{class:"row"},h("label",{},"背景色"),h("input",{type:"color",value:c.bg||"#cccccc",oninput:e=>{c.bg=e.target.value;$("#stage").style.background=c.bg;dirty()}}),h("button",{onclick:()=>{c.bg="";render();dirty()}},"既定に戻す")))}
+  isI?null:h("label",{class:"chk"},h("input",{type:"checkbox",checked:!!o.flip,disabled:dis,onchange:e=>{o.flip=e.target.checked;after();dirty()}})," 左右反転"),
+  h("div",{class:"row"},h("button",{disabled:dis,onclick:()=>{Object.assign(o,fitT==="icon"?iconDef():isI?fdFace():fitDef());render();dirty()}},"この設定をリセット")),
+  isI?h("p",{class:"hint"},fitT==="icon"?"一覧のカードの切り抜き位置です。":"コーデ画面の顔アイコンの切り抜き位置です。"):h("p",{class:"hint"},"左の画面を、ドラッグで移動、ホイールやピンチでズームもできます。"))}
+function editOutfitTab(c){oe=Math.min(oe,c.outfits.length-1);const ot=c.outfits[oe];
+ const imgBlockO=(k,label,hint)=>{const set=f=>{ot[k]=f;wear(c);render();dirty()};
+  const z=h("div",{class:"drop",tabIndex:0,onclick:()=>pick("image/*",set)},ot[k]?h("img",{src:url(ot[k]),alt:""}):h("span",{},"クリック、またはここに画像をドロップ"));dropable(z,"image/",set);
+  return h("div",{},h("label",{},label),z,ot[k]&&h("div",{class:"row"},h("button",{onclick:()=>{ot[k]=null;wear(c);render();dirty()}},"外す")),hint&&h("p",{class:"hint"},hint))};
+ requestAnimationFrame(()=>{const a=document.querySelector(".chips .on");if(a&&a.scrollIntoView)a.scrollIntoView({inline:"nearest",block:"nearest"})});
+ const del=()=>{if(c.outfits.length<2)return alert("最後の1つは削除できません");if(!confirm(`「${ot.name}」を削除しますか?`))return;c.outfits.splice(oe,1);if(oe<c.outfitCur)c.outfitCur--;else if(oe===c.outfitCur)c.outfitCur=0;oe=0;wear(c);render();dirty()};
+ return h("div",{},
+  h("div",{class:"chiprow"},h("div",{class:"chips"},...c.outfits.map((o,i)=>h("button",{class:i===oe?"on":"",title:o.name,onclick:()=>{oe=i;render()}},(i===c.outfitCur?"★ ":"")+(o.name||"(無題)")))),
+   h("button",{class:"chipadd",title:"コーデを追加",onclick:()=>{c.outfits.push(outfitDef(c.outfits.length+1));track("outfit_add",{outfits:c.outfits.length});oe=c.outfits.length-1;render();dirty()}},"＋")),
+  h("div",{class:"card"},h("h3",{},"コーデの情報"),
+   h("label",{},"コーデ名"),inp(ot,"name","例: 闘争の血脈"),
+   h("label",{},"英字タイトル(コーデ画面の大きな文字)"),inp(ot,"label","DEFAULT OUTFIT"),
+   h("label",{},"イラストレーター"),inp(ot,"illust","空欄なら、キャラのイラスト名を使います"),
+   h("label",{},"テーマカラー"),h("div",{class:"row"},h("input",{type:"color",value:ot.accent||"#2b2b2d",oninput:e=>{ot.accent=e.target.value;dirty()}})),
+   h("label",{},"説明文"),...fmtInput(ot,"desc","コーデの説明(テキスト整形も使えます)")),
+  h("div",{class:"card"},h("h3",{},"画像"),h("div",{class:"imgs"},imgBlockO("img","立ち絵"),imgBlockO("img2","セリフ中の立ち絵","任意。再生中だけ差し替わります")),imgBlockO("sd","SD(ミニキャラ)","任意。コーデ画面の左下に出ます")),
+  fitCard(ot),
+  h("div",{class:"card"},h("div",{class:"row"},h("button",{disabled:oe===c.outfitCur,onclick:()=>{c.outfitCur=oe;wear(c);render();dirty()}},oe===c.outfitCur?"★ 着用中":"このコーデを着用中にする"),h("button",{class:"danger",onclick:del},"このコーデを削除"))))}
 const TPL={"基礎情報":"【コードネーム】\n【性別】\n【戦闘経験】\n【出身地】\n【誕生日】\n【種族】\n【身長】\n"};
 function editProfile(c){const p=c.profile,addP=(title,text)=>{p.push({id:uid(),title,text});render();dirty()};
  return h("div",{},h("div",{class:"row",style:"justify-content:flex-end;margin:0 0 8px"},h("button",{class:"qbtn",title:"テキスト整形の書き方",onclick:buildHelp},"？")),p.length?null:h("p",{class:"hint"},"下のボタンで、見出し付きの文章を追加できます。「ひな形」は項目名だけ入るので、内容を書き足してね。"),
@@ -437,9 +558,40 @@ function editVoice(c){const v0=c.voices;
     h("span",{class:"badge"+(v.audio?" ok":"")},v.audio?"音声あり":"音声なし")));
   dropable(card,"audio/",set);return card});
  return h("div",{},h("div",{class:"row",style:"justify-content:space-between;flex-wrap:nowrap;margin:0 0 8px"},h("p",{class:"hint",style:"margin:0"},"音声ファイルは、各ボイスのカードにドロップしても入ります。セリフにも、テキスト整形が使えます。"),h("button",{class:"qbtn",title:"テキスト整形の書き方",onclick:buildHelp},"？")),...cards,
-  h("div",{class:"row"},h("button",{onclick:()=>{v0.push({id:uid(),title:"",text:"",audio:null});render();dirty();const s=$("#side");s.scrollTop=s.scrollHeight}},"ボイスを追加"),
+  h("div",{class:"row"},h("button",{onclick:()=>{noRestore=true;v0.push({id:uid(),title:"",text:"",audio:null});render();dirty();const s=$("#side");s.scrollTop=s.scrollHeight;requestAnimationFrame(()=>requestAnimationFrame(()=>{s.scrollTop=s.scrollHeight;noRestore=false}))}},"ボイスを追加"),
    h("button",{onclick:()=>{const have=new Set(v0.map(v=>v.title));PRESET.filter(t=>!have.has(t)).forEach(t=>v0.push({id:uid(),title:t,text:"",audio:null}));render();dirty()}},"定番の項目をまとめて追加")))}
-function render(){renderHeader();renderStage();mode==="view"?renderView():renderEdit();paintDialog();renderGallery();$("#stage").classList.toggle("adjust",canAdjust());updHdr()}
+
+/* コーデ画面 */
+function openZoom(blob){if(!blob)return;const ov=h("div",{id:"zoom"}),img=h("img",{src:url(blob),draggable:false});ov.append(img,h("button",{class:"zclose",onclick:()=>ov.remove()},"×"));document.body.append(ov);
+ let s=1,x=0,y=0,g=null;const ptr=new Map(),ap=()=>{img.style.transform=`translate(${x}px,${y}px) scale(${s})`},
+  d2=a=>Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),start=()=>{const a=[...ptr.values()];g={x:a[0].x,y:a[0].y,ox:x,oy:y,s,d:a.length>1?d2(a):0}};
+ ov.addEventListener("pointerdown",e=>{if(e.target.closest&&e.target.closest(".zclose"))return;ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});try{ov.setPointerCapture(e.pointerId)}catch(_){}start()});
+ ov.addEventListener("pointermove",e=>{if(!ptr.has(e.pointerId)||!g)return;ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});const a=[...ptr.values()];
+  if(a.length>1&&g.d)s=Math.min(8,Math.max(.3,g.s*d2(a)/g.d));else{x=g.ox+a[0].x-g.x;y=g.oy+a[0].y-g.y}ap()});
+ const end=e=>{if(ptr.delete(e.pointerId)&&ptr.size)start()};ov.addEventListener("pointerup",end);ov.addEventListener("pointercancel",end);
+ ov.addEventListener("wheel",e=>{e.preventDefault();s=Math.min(8,Math.max(.3,s*Math.exp(-e.deltaY*.0015)));ap()},{passive:false});
+ ov.addEventListener("dblclick",()=>{s=1;x=y=0;ap()})}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){const z=$("#zoom");if(z)z.remove()}});
+function renderOutfit(){const g=$("#outfit"),on=showOutfit&&!showList&&mode==="view";g.classList.toggle("show",on);if(!on)return;
+ const c=C(),n=c.outfits.length;oview=Math.min(oview,n-1);const o=c.outfits[oview],worn=oview===c.outfitCur;g.style.setProperty("--ac",o.accent||"#2b2b2d");
+ const go=d=>{oview=(oview+d+n)%n;render()};
+ const face=(f,cls)=>h("div",{class:"ofr "+cls},h("div",{class:"ofin"},o.img?faceImg(o.img,f):null));
+ const left=h("div",{class:"ol"},
+  h("div",{class:"oart"},o.img?h("img",{src:url(o.img),alt:"",style:"transform:"+ftr(o.fit)}):h("div",{class:"empty"},"立ち絵がありません")),
+  h("button",{class:"oback",title:"戻る",onclick:()=>{showOutfit=false;render()}},"〈"),
+  o.sd&&h("div",{class:"osd"},h("div",{class:"osdin"},sdImg(o.sd,o.sdfit))),
+  h("button",{class:"ozoom",title:"拡大して見る",onclick:()=>openZoom(o.img)},h("i",{innerHTML:IC_ZM})),
+  h("div",{class:"ofaces"},face(o.f1,"sq"),face(o.f2,"tall")),
+  h("div",{class:"oinfo"},h("div",{class:"otitle"},o.label||"OUTFIT"),h("div",{class:"obar"},h("div",{},"◆ "+(c.en||c.name)),h("div",{},"✎ "+(o.illust||c.il||""))),h("div",{class:"odesc"},...fmt(o.desc||""))));
+ const strips=c.outfits.map((t,i)=>h("button",{class:"ostrip"+(i===oview?" sel":"")+(i===c.outfitCur?" worn":""),title:t.name,onclick:()=>{oview=i;render()}},t.img?faceImg(t.img,t.icon):null,i===oview?h("div",{class:"ocn"},t.name):null));
+ const right=h("div",{class:"or"},
+  h("div",{class:"otab"},h("small",{},"OUTFIT "+String(oview+1).padStart(2,"0")),h("b",{},o.name||"")),
+  h("div",{class:"ocar"},n>1&&h("button",{class:"oarr l",onclick:()=>go(-1)},"◀"),h("div",{class:"ostrips"},...strips),n>1&&h("button",{class:"oarr r",onclick:()=>go(1)},"▶")),
+  h("div",{class:"ocap"},h("span",{class:"oacc"},c.name)," 専用コーデ"),
+  h("button",{class:"owear"+(worn?" on":""),disabled:worn,onclick:()=>{track("outfit_wear");c.outfitCur=oview;wear(c);dirty();render()}},worn?"着用中":"着替"),
+  h("p",{class:"onote"},"着用中のコーデが、一覧やキャラ画面にも反映されます"));
+ g.replaceChildren(left,right);const sel=g.querySelector(".ostrip.sel");if(sel&&sel.scrollIntoView)sel.scrollIntoView({inline:"center",block:"nearest"})}
+function render(){renderHeader();renderStage();mode==="view"?renderView():renderEdit();paintDialog();renderGallery();renderOutfit();$("#stage").classList.toggle("adjust",canAdjust());updHdr()}
 
 /* 専用スクロールバー(平行四辺形) */
 function attachBar(sc,par){if(!sc||!par)return;if(getComputedStyle(par).position==="static")par.style.position="relative";
@@ -474,7 +626,7 @@ document.addEventListener("fullscreenchange",()=>{renderHeader();if($("#ov")&&$(
 $("#hdrTog").onclick=()=>{hdrOpen=!hdrOpen;updHdr()};
 $("#bFs").onclick=toggleFs;
 /* ---------- 設定・BGM ---------- */
-const fixSet=()=>{S.roleIcons=S.roleIcons||{};S.set=Object.assign({bgmVol:.5,voiceVol:1,loop:true,duck:true,hideHdr:true},S.set||{})};
+const fixSet=()=>{S.order=S.order||[];S.roleIcons=S.roleIcons||{};S.set=Object.assign({bgmVol:.5,voiceVol:1,loop:true,duck:true,hideHdr:true},S.set||{})};
 function applyVol(){if(!S.set)return;const t=S.set.duck&&playing!=null?.35:1;bgm.volume=Math.min(1,Math.max(0,S.set.bgmVol*t));audio.volume=Math.min(1,Math.max(0,S.set.voiceVol));bgm.loop=!!S.set.loop}
 function loadBgm(){if(S.bgm){bgm.src=url(S.bgm)}else{bgm.pause();bgm.removeAttribute("src");try{bgm.load()}catch(_){}}applyVol()}
 function toggleBgm(){if(!S.bgm)return;bgm.paused?bgm.play().catch(()=>alert("BGMを再生できませんでした")):bgm.pause()}
@@ -511,7 +663,7 @@ $("#bBgm").onclick=toggleBgm;
 
 /* ---------- 起動 ---------- */
 $("#mView").onclick=()=>{if(recorder)return alert("録音中です。先に止めてね");stopAll();mode="view";tab=null;render()};
-$("#mEdit").onclick=()=>{stopAll();mode="edit";render()};
+$("#mEdit").onclick=()=>{stopAll();mode="edit";showOutfit=false;render()};
 (()=>{const st=$("#stage"),ptr=new Map();let g=null;
  const pts=()=>[...ptr.values()],dist=()=>{const a=pts();return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)};
  const cl=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -525,12 +677,12 @@ $("#mEdit").onclick=()=>{stopAll();mode="edit";render()};
  st.addEventListener("wheel",e=>{if(!canAdjust())return;e.preventDefault();const f=curFit();f.s=cl(f.s*Math.exp(-e.deltaY*.0015),.2,4);applyArt();syncCtl();dirty()},{passive:false})})();
 attachBar($("#side"),$("main"));
 if(window.ResizeObserver)new ResizeObserver(()=>fitGrid()).observe($("#gallery"));
-$("#bList").onclick=()=>{stopAll();showList=!showList;render()};
-$("#bZip").onclick=exportZip;
+$("#bList").onclick=()=>{stopAll();showOutfit=false;showList=!showList;render()};
+$("#bZip").onclick=()=>exportZip();
 $("#bLoad").onclick=()=>$("#fZip").click();
 $("#fZip").onchange=e=>{if(e.target.files[0])importZip(e.target.files[0]);e.target.value=""};
 (async()=>{try{const d=await kv("get","main");if(d&&d.chars&&d.chars.length)S=d}catch(e){}
- if(!S.chars.length)S.chars.push(newChar());S.chars.forEach(fixChar);fixSet();loadBgm();applyVol();if(S.cur>=S.chars.length)S.cur=0;
+ if(!S.chars.length)S.chars.push(newChar());S.chars.forEach(fixChar);fixSet();loadBgm();applyVol();listSort=S.listSort||"reg";if(S.cur>=S.chars.length)S.cur=0;
  mode=S.chars.some(c=>c.img||c.voices.some(v=>v.audio||v.text))?"view":"edit";
  $("#status").textContent="ブラウザに保存済み";showList=true;render()})();
 </script>
