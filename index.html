@@ -131,9 +131,9 @@ textarea{min-height:64px;resize:vertical}
 .tile .art{position:absolute;inset:0;overflow:hidden;display:grid;place-items:center;color:#777;font-size:13px}
 .tile .art img{width:100%;height:100%;object-fit:cover}
 .tile .cls{z-index:2;position:absolute;left:0;top:0;background:#111d;padding:5px 16px 5px 9px;font-size:max(10px,calc(var(--cw,138px)*.075));font-family:var(--font);font-weight:700;clip-path:polygon(0 0,100% 0,88% 100%,0 100%)}
-.tile .band{z-index:1;position:absolute;left:0;right:0;bottom:0;height:26%;padding:0 10px 9px;display:flex;align-items:flex-end;justify-content:flex-end;background:linear-gradient(to top,#111f 0 50%,#1110)}
+.tile .band{z-index:1;position:absolute;left:0;right:0;bottom:0;min-height:26%;padding:0 8px 8px;display:flex;align-items:flex-end;justify-content:flex-end;background:linear-gradient(to top,#111f 0 50%,#1110)}
 .tile .band::before{content:"";position:absolute;left:0;bottom:0;width:38px;height:12px;background:repeating-linear-gradient(120deg,var(--acc) 0 6px,transparent 6px 11px)}
-.tile .nm{font-family:var(--font);font-weight:700;font-size:max(12px,calc(var(--cw,138px)*.11));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.tile .nm{font-family:var(--font);font-weight:700;font-size:max(11px,calc(var(--cw,138px)*.12));line-height:1.15;text-align:right;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;word-break:break-all;max-width:100%}
 .tile .rk{position:absolute;z-index:3;left:8px;bottom:36px;width:54px;height:54px;border-radius:50%;border:2px solid #fff;background:#111;display:grid;place-items:center;overflow:hidden;box-shadow:0 2px 8px #000a}
 .tile .rk img{width:100%;height:100%;object-fit:contain;padding:9px}
 .rrow{display:flex;align-items:center;gap:8px;margin:6px 0}
@@ -216,6 +216,21 @@ body.hdr-hide header{display:none}
 #side .ed .chips button.on{background:var(--acc);color:#000;border-color:var(--acc)}
 #side .ed .chipadd{flex:none;width:40px;padding:0;border-radius:0}
 @media(max-width:760px){#outfit.show{grid-template-columns:1fr;grid-template-rows:62vh auto;grid-template-rows:62dvh auto;overflow-y:auto}.ol{height:62vh;height:62dvh}.or{height:auto;padding-top:12px}.ocar{height:38vh;flex:none}.oinfo{width:44%;max-height:34%}.ofaces{width:22%}.osd{width:28%}}
+.isl{display:flex;flex:none;gap:6px;align-items:center}.isl button{white-space:nowrap}
+#islSort{display:none}
+#app{position:relative}
+body[data-screen=list] #islSort{display:flex}
+body[data-screen=list] header{position:absolute;left:0;right:0;top:0;z-index:30;background:transparent;border-bottom:0;pointer-events:none;padding:8px 10px}
+body[data-screen=list] header>*{pointer-events:auto}
+body[data-screen=list] header h1{background:rgba(28,28,30,.92);padding:9px 16px;margin:0;box-shadow:0 2px 8px #0005}
+body[data-screen=list] .isl{background:rgba(28,28,30,.92);padding:3px;gap:2px;box-shadow:0 2px 8px #0005}
+body[data-screen=list] .isl button{background:transparent;border:0;border-radius:0;color:#ddd;padding:7px 12px}
+body[data-screen=list] .isl button:hover{background:#ffffff1f}
+body[data-screen=list] .isl button.on{background:var(--acc);color:#000}
+body[data-screen=list] #status{color:#555}
+#gallery.show{padding-top:var(--hdrH,56px)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000c;color:#fff;border:1px solid #888;padding:8px 16px;border-radius:6px;font-size:14px;z-index:120;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}#toast.on{opacity:1}
+@media(max-height:480px){body[data-screen=list] header{padding:4px 8px}body[data-screen=list] header h1{padding:6px 12px;font-size:13px}body[data-screen=list] .isl button{padding:5px 10px;font-size:13px}}
 @media(max-width:760px){.grail{width:64px}.ggrid{padding:12px;gap:12px}}
 @media(max-width:760px){
 main{flex-direction:column}
@@ -244,6 +259,11 @@ input,textarea,select{font-size:16px!important}
 header{padding:4px 8px}header button{padding:4px 8px}
 .vhead{height:64px}.rail{margin-top:76px}#side .rail .ico{height:64px}.vh-label{font-size:18px}
 .pt{font-size:14px;line-height:1.7}.ph{font-size:16px;padding:4px 12px}.vbtn .tt{font-size:15px;padding:9px 14px}
+#status{display:none}
+.gtop{padding:0 8px}.gtop button{padding:7px 12px;font-size:13px}.ghint{font-size:11px}
+.ggrid{padding:8px 10px;gap:8px}
+.grail{width:72px}.grail button{padding:12px 4px;font-size:12px}
+.tile .cls{padding:3px 12px 3px 6px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -257,12 +277,10 @@ header{padding:4px 8px}header button{padding:4px 8px}
   <button id="bList">← 一覧</button>
   <span class="grow"></span>
   <span id="status">読み込み中…</span>
-  <button id="bZip">ZIPで保存</button>
-  <button id="bLoad">ZIPを読み込む</button>
+  <div class="isl" id="islSort"></div>
+  <div class="isl" id="islFile"><button id="bZip">ZIPで保存</button><button id="bLoad">ZIPを読み込む</button></div>
   <input id="fZip" type="file" accept=".zip" hidden>
-  <button id="bFs" style="display:none" title="全画面">⛶</button>
-  <button id="bBgm" style="display:none">♪ BGM</button>
-  <button id="bSet">⚙ 設定</button>
+  <div class="isl" id="islSys"><button id="bFs" style="display:none" title="全画面">⛶</button><button id="bBgm" style="display:none">♪ BGM</button><button id="bSet">⚙ 設定</button></div>
 </header>
 <main>
   <section id="stage" aria-label="立ち絵"></section>
@@ -427,6 +445,8 @@ function enableDrag(gg,items){const tiles=[...gg.querySelectorAll(".tile:not(.ad
     render()};
    document.addEventListener("pointermove",mv);document.addEventListener("pointerup",up);document.addEventListener("pointercancel",cancel);
    if(touch)timer=setTimeout(begin,380)})})}
+function toast(m){let t=$("#toast");if(!t){t=h("div",{id:"toast"});document.body.append(t)}t.textContent=m;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2600)}
+function fitHdr(){const hd=$("header");if(hd)document.documentElement.style.setProperty("--hdrH",hd.offsetHeight+"px")}
 function renderGallery(){const g=$("#gallery");g.classList.toggle("show",showList);$("#stage").style.display=$("#side").style.display=(showList||showOutfit)?"none":"";if(!showList)return;
  const roles=[...new Set(S.chars.map(c=>c.role).filter(Boolean))];if(listRole!=="ALL"&&!roles.includes(listRole))listRole="ALL";
  const items=S.chars.map((c,i)=>({c,i})).filter(x=>listRole==="ALL"||x.c.role===listRole);
@@ -437,9 +457,9 @@ function renderGallery(){const g=$("#gallery");g.classList.toggle("show",showLis
   h("div",{class:"art"},c.img?iconImg(c):"立ち絵なし"),c.role&&h("span",{class:"cls"},c.role),
   SHOW_ROLE_ICON&&roleSrc(c.role)&&h("div",{class:"rk"},h("img",{src:roleSrc(c.role),alt:c.role})),h("div",{class:"band"},h("span",{class:"nm"},c.name||"(名前なし)")));
  const add=h("button",{class:"tile add",title:"キャラを追加",onclick:()=>{track("character_add");S.chars.push(newChar());S.cur=S.chars.length-1;showList=false;tab=null;mode="edit";etab="basic";render();dirty()}},h("span",{class:"plus"},"＋"));
+  const sortBtns=[["reg","登録順"],["name","名前順"],["custom","カスタム"]].map(([k,l])=>h("button",{class:listSort===k?"on":"",onclick:()=>{if(k==="custom"&&!(S.order&&S.order.length))S.order=S.chars.map(c=>c.id);const was=listSort;listSort=k;S.listSort=k;dirty();render();if(k==="custom"&&was!=="custom")toast(listRole==="ALL"?"カードをドラッグ(スマホは長押し)で並べ替えられます":"並べ替えは、右の「ALL」を選んでからできます")}},l));
+ $("#islSort").replaceChildren(...sortBtns);
  g.replaceChildren(h("div",{class:"gmain"},
-  h("div",{class:"gtop"},listSort==="custom"?h("span",{class:"ghint"},canDrag?"ドラッグ(スマホは長押し)で並べ替え":"並べ替えは、右の「ALL」を選んでからできます"):null,
-   ...[["reg","登録順"],["name","名前順"],["custom","カスタム"]].map(([k,l])=>h("button",{class:listSort===k?"on":"",onclick:()=>{if(k==="custom"&&!(S.order&&S.order.length))S.order=S.chars.map(c=>c.id);listSort=k;S.listSort=k;dirty();render()}},l))),
   h("div",{class:"ggrid"+(canDrag?" custom":"")},...items.map(tile),add)),
   h("div",{class:"grail"},...["ALL",...roles].map(r=>h("button",{class:listRole===r?"on":"",onclick:()=>{listRole=r;render()}},r))));
  const gg=$(".ggrid");gg.addEventListener("wheel",e=>{if(Math.abs(e.deltaX)<Math.abs(e.deltaY)){gg.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});fitGrid();
@@ -591,7 +611,7 @@ function renderOutfit(){const g=$("#outfit"),on=showOutfit&&!showList&&mode==="v
   h("button",{class:"owear"+(worn?" on":""),disabled:worn,onclick:()=>{track("outfit_wear");c.outfitCur=oview;wear(c);dirty();render()}},worn?"着用中":"着替"),
   h("p",{class:"onote"},"着用中のコーデが、一覧やキャラ画面にも反映されます"));
  g.replaceChildren(left,right);const sel=g.querySelector(".ostrip.sel");if(sel&&sel.scrollIntoView)sel.scrollIntoView({inline:"center",block:"nearest"})}
-function render(){renderHeader();renderStage();mode==="view"?renderView():renderEdit();paintDialog();renderGallery();renderOutfit();$("#stage").classList.toggle("adjust",canAdjust());updHdr()}
+function render(){renderHeader();renderStage();mode==="view"?renderView():renderEdit();paintDialog();renderGallery();renderOutfit();fitHdr();$("#stage").classList.toggle("adjust",canAdjust());updHdr()}
 
 /* 専用スクロールバー(平行四辺形) */
 function attachBar(sc,par){if(!sc||!par)return;if(getComputedStyle(par).position==="static")par.style.position="relative";
@@ -676,7 +696,7 @@ $("#mEdit").onclick=()=>{stopAll();mode="edit";showOutfit=false;render()};
  st.addEventListener("pointerup",end);st.addEventListener("pointercancel",end);
  st.addEventListener("wheel",e=>{if(!canAdjust())return;e.preventDefault();const f=curFit();f.s=cl(f.s*Math.exp(-e.deltaY*.0015),.2,4);applyArt();syncCtl();dirty()},{passive:false})})();
 attachBar($("#side"),$("main"));
-if(window.ResizeObserver)new ResizeObserver(()=>fitGrid()).observe($("#gallery"));
+if(window.ResizeObserver){new ResizeObserver(()=>fitGrid()).observe($("#gallery"));new ResizeObserver(()=>fitHdr()).observe($("header"))}
 $("#bList").onclick=()=>{stopAll();showOutfit=false;showList=!showList;render()};
 $("#bZip").onclick=()=>exportZip();
 $("#bLoad").onclick=()=>$("#fZip").click();
