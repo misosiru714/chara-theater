@@ -116,7 +116,7 @@ textarea{min-height:64px;resize:vertical}
 .modal .hint{margin:6px 0}
 .ctl2{display:grid;grid-template-columns:80px 1fr 46px;gap:8px;align-items:center;margin:8px 0;font-size:13px}
 .ctl2 input[type=range]{width:100%;accent-color:#2b2b2d}.ctl2 .pc{text-align:right}
-#gallery{display:none;flex:1;min-width:0;overflow:hidden;background:linear-gradient(135deg,#e4e4e4,#bdbdbd);color:#111}
+#gallery{display:none;flex:1;min-width:0;overflow:hidden;background:none;color:#111}
 #gallery.show{display:flex}
 .gmain{flex:1;min-width:0;display:flex;flex-direction:column}
 .gtop{display:flex;justify-content:flex-end;padding:0 12px;background:#1c1c1ee6}
@@ -220,17 +220,24 @@ body.hdr-hide header{display:none}
 #islSort{display:none}
 #app{position:relative}
 body[data-screen=list] #islSort{display:flex}
-body[data-screen=list] header{position:absolute;left:0;right:0;top:0;z-index:30;background:transparent;border-bottom:0;pointer-events:none;padding:8px 10px}
-body[data-screen=list] header>*{pointer-events:auto}
+body[data-screen=list] header{background:transparent;border-bottom:0;padding:8px 10px}
 body[data-screen=list] header h1{background:rgba(28,28,30,.92);padding:9px 16px;margin:0;box-shadow:0 2px 8px #0005}
 body[data-screen=list] .isl{background:rgba(28,28,30,.92);padding:3px;gap:2px;box-shadow:0 2px 8px #0005}
 body[data-screen=list] .isl button{background:transparent;border:0;border-radius:0;color:#ddd;padding:7px 12px}
 body[data-screen=list] .isl button:hover{background:#ffffff1f}
 body[data-screen=list] .isl button.on{background:var(--acc);color:#000}
 body[data-screen=list] #status{color:#555}
-#gallery.show{padding-top:var(--hdrH,56px)}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000c;color:#fff;border:1px solid #888;padding:8px 16px;border-radius:6px;font-size:14px;z-index:120;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw;text-align:center}#toast.on{opacity:1}
 @media(max-height:480px){body[data-screen=list] header{padding:4px 8px}body[data-screen=list] header h1{padding:6px 12px;font-size:13px}body[data-screen=list] .isl button{padding:5px 10px;font-size:13px}}
+body[data-screen=list]{background:linear-gradient(135deg,#e4e4e4,#bdbdbd)}
+@media(max-width:760px){
+body[data-screen=list] header h1{display:none}
+body[data-screen=list] .isl button{font-size:0;padding:8px 9px}
+body[data-screen=list] .isl button::after{content:attr(data-s);font-size:13px}
+}
+#dialog.tap::after{content:"▼";position:absolute;right:12px;bottom:6px;font-size:13px;opacity:.85;animation:blink 1.2s infinite}
+@keyframes blink{50%{opacity:.2}}
+@media(prefers-reduced-motion:reduce){#dialog.tap::after{animation:none}}
 @media(max-width:760px){.grail{width:64px}.ggrid{padding:12px;gap:12px}}
 @media(max-width:760px){
 main{flex-direction:column}
@@ -278,9 +285,9 @@ header{padding:4px 8px}header button{padding:4px 8px}
   <span class="grow"></span>
   <span id="status">読み込み中…</span>
   <div class="isl" id="islSort"></div>
-  <div class="isl" id="islFile"><button id="bZip">ZIPで保存</button><button id="bLoad">ZIPを読み込む</button></div>
+  <div class="isl" id="islFile"><button id="bZip" data-s="保存">ZIPで保存</button><button id="bLoad" data-s="読込">ZIPを読み込む</button></div>
   <input id="fZip" type="file" accept=".zip" hidden>
-  <div class="isl" id="islSys"><button id="bFs" style="display:none" title="全画面">⛶</button><button id="bBgm" style="display:none">♪ BGM</button><button id="bSet">⚙ 設定</button></div>
+  <div class="isl" id="islSys"><button id="bFs" style="display:none" title="全画面" data-s="⛶">⛶</button><button id="bBgm" style="display:none" data-s="♪">♪ BGM</button><button id="bSet" data-s="⚙">⚙ 設定</button></div>
 </header>
 <main>
   <section id="stage" aria-label="立ち絵"></section>
@@ -358,13 +365,14 @@ async function importZip(file){try{const z=await readZip(await file.arrayBuffer(
  S.chars.forEach(fixChar);fixSet();loadBgm();if(!S.chars.length)S.chars.push(newChar());if(S.cur>=S.chars.length)S.cur=0;stopAll();showList=true;render();dirty();track("zip_import",{characters:man.chars.length,mode})}catch(e){alert("読み込み失敗: "+e.message)}}
 
 /* ---------- 再生 ---------- */
-let rafId=0,startT=0,estDur=2500;
+let rafId=0,startT=0,estDur=2500,dlgIdx=null;
 const bgm=new Audio();
 const audio=new Audio();let typeT=null,endT=null;
-function stopAll(){cancelAnimationFrame(rafId);audio.pause();clearInterval(typeT);clearTimeout(endT);playing=null;paintList();paintDialog();applyVol()}
-function play(i){if(playing===i){stopAll();return}stopAll();const v=C().voices[i];playing=i;paintList();paintDialog(true);applyVol();track("voice_play",{mode});
+function stopAll(){cancelAnimationFrame(rafId);audio.pause();clearInterval(typeT);clearTimeout(endT);playing=null;dlgIdx=null;paintList();paintDialog();applyVol()}
+function endPlay(){cancelAnimationFrame(rafId);audio.pause();clearInterval(typeT);clearTimeout(endT);playing=null;if(!(S.set&&S.set.dlgMode!=="auto"))dlgIdx=null;paintList();paintDialog();applyVol()}
+function play(i){if(playing===i){stopAll();return}stopAll();const v=C().voices[i];playing=i;dlgIdx=i;paintList();paintDialog(true);applyVol();track("voice_play",{mode});
  estDur=Math.max(2500,(v.text||"").length*130);startT=performance.now();
- if(v.audio){audio.src=url(v.audio);audio.onended=()=>stopAll();audio.play().catch(()=>{})}else endT=setTimeout(stopAll,estDur);
+ if(v.audio){audio.src=url(v.audio);audio.onended=()=>endPlay();audio.play().catch(()=>{})}else endT=setTimeout(endPlay,estDur);
  tickBar()}
 function tickBar(){if(playing==null)return;const v=C().voices[playing],b=document.querySelector(".vbtn.playing .bar");
  if(b){let r;if(v&&v.audio){const d=isFinite(audio.duration)&&audio.duration>0?audio.duration:(v.dur||estDur/1000);r=audio.currentTime/d}else r=(performance.now()-startT)/estDur;b.style.transform="scaleX("+Math.min(1,Math.max(0,r))+")"}
@@ -376,9 +384,9 @@ function showFmt(el,text,animate){el.replaceChildren(...fmt(text||""));const cha
  el.querySelectorAll("rt").forEach(rt=>{const b=rt.parentElement.querySelector(".ch");if(animate&&b){rt.classList.add("rtw");rts.set(b,rt)}});
  clearInterval(typeT);if(!animate)return;let k=0;
  typeT=setInterval(()=>{const c=chars[k++];if(c){c.classList.add("on");const rt=rts.get(c);if(rt)rt.classList.remove("rtw")}if(k>=chars.length)clearInterval(typeT)},45)}
-function paintDialog(start){const d=$("#dialog");if(!d)return;const c=C(),v=playing!=null?c.voices[playing]:null;
- d.classList.toggle("show",!!v);applyArt();
- if(!v)return;showFmt($("#dtext"),v.text,!!start)}
+function paintDialog(start){const d=$("#dialog");if(!d)return;const c=C(),v=dlgIdx!=null?c.voices[dlgIdx]:null,tap=!(S.set&&S.set.dlgMode==="auto");
+ d.classList.toggle("show",!!v);d.classList.toggle("tap",tap&&!!v);applyArt();
+ if(!v)return;showFmt($("#dtext"),v.text,!!start&&!tap)}
 function paintList(){document.querySelectorAll(".vbtn").forEach((b,i)=>{const on=playing===i;b.classList.toggle("playing",on);b.querySelector(".ic").textContent=on?"■":"▶";if(!on)b.querySelector(".bar").style.transform="scaleX(0)"})}
 
 /* ---------- 録音 ---------- */
@@ -404,7 +412,7 @@ function fixChar(c){c.profile||(c.profile=[]);c.fit||(c.fit=fitDef());c.fit2||(c
 const editFit=()=>!showList&&mode==="edit"&&etab==="outfit";
 const eo=()=>{const c=C();return c.outfits[Math.min(oe,c.outfits.length-1)]};
 function curArt(){const c=C();if(editFit()){const o=eo(),alt=o.img2&&fitT==="img2";return alt?{b:o.img2,f:o.fit2c?o.fit2:o.fit}:{b:o.img,f:o.fit}}
- const alt=c.img2&&playing!=null;return alt?{b:c.img2,f:c.fit2}:{b:c.img,f:c.fit}}
+ const alt=c.img2&&dlgIdx!=null;return alt?{b:c.img2,f:c.fit2}:{b:c.img,f:c.fit}}
 const ftr=f=>`translate(${f.x}%,${f.y}%) scale(${f.flip?-f.s:f.s},${f.s})`;
 function applyArt(){const a=$("#stage img.art");if(!a)return;const{b,f}=curArt();a.src=url(b);a.style.transform=ftr(f)}
 const applyIcon=(i,o)=>{i.style.objectPosition=o.x+"% "+o.y+"%";i.style.transformOrigin=o.x+"% "+o.y+"%";i.style.transform="scale("+o.s+")"};
@@ -457,7 +465,7 @@ function renderGallery(){const g=$("#gallery");g.classList.toggle("show",showLis
   h("div",{class:"art"},c.img?iconImg(c):"立ち絵なし"),c.role&&h("span",{class:"cls"},c.role),
   SHOW_ROLE_ICON&&roleSrc(c.role)&&h("div",{class:"rk"},h("img",{src:roleSrc(c.role),alt:c.role})),h("div",{class:"band"},h("span",{class:"nm"},c.name||"(名前なし)")));
  const add=h("button",{class:"tile add",title:"キャラを追加",onclick:()=>{track("character_add");S.chars.push(newChar());S.cur=S.chars.length-1;showList=false;tab=null;mode="edit";etab="basic";render();dirty()}},h("span",{class:"plus"},"＋"));
-  const sortBtns=[["reg","登録順"],["name","名前順"],["custom","カスタム"]].map(([k,l])=>h("button",{class:listSort===k?"on":"",onclick:()=>{if(k==="custom"&&!(S.order&&S.order.length))S.order=S.chars.map(c=>c.id);const was=listSort;listSort=k;S.listSort=k;dirty();render();if(k==="custom"&&was!=="custom")toast(listRole==="ALL"?"カードをドラッグ(スマホは長押し)で並べ替えられます":"並べ替えは、右の「ALL」を選んでからできます")}},l));
+  const sortBtns=[["reg","登録順","登録"],["name","名前順","名前"],["custom","カスタム","自由"]].map(([k,l,sh])=>{const b=h("button",{class:listSort===k?"on":"",onclick:()=>{if(k==="custom"&&!(S.order&&S.order.length))S.order=S.chars.map(c=>c.id);const was=listSort;listSort=k;S.listSort=k;dirty();render();if(k==="custom"&&was!=="custom")toast(listRole==="ALL"?"カードをドラッグ(スマホは長押し)で並べ替えられます":"並べ替えは、右の「ALL」を選んでからできます")}},l);b.setAttribute("data-s",sh);return b});
  $("#islSort").replaceChildren(...sortBtns);
  g.replaceChildren(h("div",{class:"gmain"},
   h("div",{class:"ggrid"+(canDrag?" custom":"")},...items.map(tile),add)),
@@ -646,7 +654,7 @@ document.addEventListener("fullscreenchange",()=>{renderHeader();if($("#ov")&&$(
 $("#hdrTog").onclick=()=>{hdrOpen=!hdrOpen;updHdr()};
 $("#bFs").onclick=toggleFs;
 /* ---------- 設定・BGM ---------- */
-const fixSet=()=>{S.order=S.order||[];S.roleIcons=S.roleIcons||{};S.set=Object.assign({bgmVol:.5,voiceVol:1,loop:true,duck:true,hideHdr:true},S.set||{})};
+const fixSet=()=>{S.order=S.order||[];S.roleIcons=S.roleIcons||{};S.set=Object.assign({bgmVol:.5,voiceVol:1,loop:true,duck:true,hideHdr:true,dlgMode:"tap"},S.set||{})};
 function applyVol(){if(!S.set)return;const t=S.set.duck&&playing!=null?.35:1;bgm.volume=Math.min(1,Math.max(0,S.set.bgmVol*t));audio.volume=Math.min(1,Math.max(0,S.set.voiceVol));bgm.loop=!!S.set.loop}
 function loadBgm(){if(S.bgm){bgm.src=url(S.bgm)}else{bgm.pause();bgm.removeAttribute("src");try{bgm.load()}catch(_){}}applyVol()}
 function toggleBgm(){if(!S.bgm)return;bgm.paused?bgm.play().catch(()=>alert("BGMを再生できませんでした")):bgm.pause()}
@@ -669,7 +677,9 @@ function buildSettings(){let ov=$("#ov");if(!ov){ov=h("div",{id:"ov"});ov.addEve
   h("div",{class:"card"},h("h3",{},"BGM"),h("p",{class:"hint"},S.bgm?"設定中: "+(S.bgmName||"BGM"):"未設定(ここに音声ファイルをドロップしても設定できます)"),
    h("div",{class:"row"},h("button",{onclick:()=>pick("audio/*",setBgm)},"BGMを選ぶ"),S.bgm&&h("button",{onclick:toggleBgm},bgm.paused?"▶ 再生":"■ 停止"),S.bgm&&h("button",{onclick:()=>{S.bgm=null;S.bgmName="";loadBgm();dirty();buildSettings();renderHeader()}},"外す")),
    sl("BGM音量","bgmVol"),chk("ループ再生","loop"),chk("ボイス再生中はBGMを小さくする","duck")),
-  h("div",{class:"card"},h("h3",{},"ボイス"),sl("ボイス音量","voiceVol")),
+  h("div",{class:"card"},h("h3",{},"ボイス"),sl("ボイス音量","voiceVol")),h("div",{class:"card"},h("h3",{},"セリフ枠"),h("label",{},"表示のしかた"),
+   h("select",{onchange:e=>{st.dlgMode=e.target.value;dirty()}},h("option",{value:"tap",selected:st.dlgMode!=="auto"},"一気に表示して、タップ(クリック)するまで残す"),h("option",{value:"auto",selected:st.dlgMode==="auto"},"1文字ずつ表示して、再生が終わると消える")),
+   h("p",{class:"hint"},"初期設定は、一気に表示して、画面(立ち絵の部分やセリフ枠)をタップかクリックするまで消えない形です。")),
   h("div",{class:"card"},h("h3",{},"表示"),
    chk("横向きのスマホでは、ヘッダーを隠す(左上の☰で出し入れ)","hideHdr"),
    FS_OK?h("div",{class:"row"},h("button",{onclick:toggleFs},document.fullscreenElement?"全画面を解除":"全画面にする")):h("p",{class:"hint"},"このブラウザ(iPhoneのSafariなど)では、全画面表示のボタンは使えません。"),
@@ -697,6 +707,7 @@ $("#mEdit").onclick=()=>{stopAll();mode="edit";showOutfit=false;render()};
  st.addEventListener("wheel",e=>{if(!canAdjust())return;e.preventDefault();const f=curFit();f.s=cl(f.s*Math.exp(-e.deltaY*.0015),.2,4);applyArt();syncCtl();dirty()},{passive:false})})();
 attachBar($("#side"),$("main"));
 if(window.ResizeObserver){new ResizeObserver(()=>fitGrid()).observe($("#gallery"));new ResizeObserver(()=>fitHdr()).observe($("header"))}
+$("#stage").addEventListener("click",()=>{if(dlgIdx!=null){dlgIdx=null;paintDialog()}});
 $("#bList").onclick=()=>{stopAll();showOutfit=false;showList=!showList;render()};
 $("#bZip").onclick=()=>exportZip();
 $("#bLoad").onclick=()=>$("#fZip").click();
