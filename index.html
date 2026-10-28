@@ -238,6 +238,14 @@ body[data-screen=list] .isl button::after{content:attr(data-s);font-size:13px}
 #dialog.tap::after{content:"▼";position:absolute;right:12px;bottom:6px;font-size:13px;opacity:.85;animation:blink 1.2s infinite}
 @keyframes blink{50%{opacity:.2}}
 @media(prefers-reduced-motion:reduce){#dialog.tap::after{animation:none}}
+.pvbtn{display:none}
+@media(max-width:760px){
+body.ed-nopv #stage{display:none}
+body.ed-pv #stage{height:34vh;height:34dvh}
+#side .etabs .pvbtn{display:grid;place-items:center;flex:none;width:52px;padding:0;color:#bbb}
+#side .etabs .pvbtn svg{width:24px;height:24px;fill:currentColor}
+#side .etabs .pvbtn.on{color:#fff;border-bottom-color:var(--acc)}
+}
 @media(max-width:760px){.grail{width:64px}.ggrid{padding:12px;gap:12px}}
 @media(max-width:760px){
 main{flex-direction:column}
@@ -398,7 +406,7 @@ async function startRec(i){try{const st=await navigator.mediaDevices.getUserMedi
 /* ---------- 描画 ---------- */
 const SHOW_ROLE_ICON=false; // 職業アイコン表示の切り替え(trueで再開)
 const roleSrc=r=>{const b=(S.roleIcons||{})[r];return b?url(b):""};
-let showList=false,tab=null,etab="basic",fitT="img",ctlSync=[],showOutfit=false,oview=0,oe=0,noRestore=false;
+let showList=false,tab=null,etab="basic",fitT="img",ctlSync=[],showOutfit=false,oview=0,oe=0,noRestore=false,pv=null;
 const fitDef=()=>({s:1,x:0,y:0,flip:false}),iconDef=()=>({s:1,x:50,y:15});
 const fdFace=()=>({s:1.6,x:50,y:14});
 function fixOutfit(o){o.id||(o.id=uid());if(o.name==null)o.name="コーデ";if(o.label==null)o.label="OUTFIT";["series","illust","desc"].forEach(k=>{if(o[k]==null)o[k]=""});o.accent||(o.accent="#2b2b2d");
@@ -522,9 +530,11 @@ const field=(label,o,k,ph)=>h("div",{},h("label",{},label),inp(o,k,ph,refreshPla
 const ctrl=(a,i)=>h("div",{class:"row tight"},h("button",{title:"上へ",disabled:i===0,onclick:()=>{[a[i],a[i-1]]=[a[i-1],a[i]];render();dirty()}},"↑"),h("button",{title:"下へ",disabled:i===a.length-1,onclick:()=>{[a[i],a[i+1]]=[a[i+1],a[i]];render();dirty()}},"↓"),h("button",{class:"danger",onclick:()=>{a.splice(i,1);render();dirty()}},"削除"));
 
 /* 作るモード: 基本 / プロファイル / ボイス */
+const pvVisible=()=>pv===null?etab==="outfit":pv;
+const IC_EYE='<svg viewBox="0 0 24 24"><path d="M12 5C6 5 2 12 2 12s4 7 10 7 10-7 10-7-4-7-10-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/><circle cx="12" cy="12" r="1.8"/></svg>';
 const ETABS=[["basic","基本"],["outfit","コーデ"],["profile","プロファイル"],["voice","ボイス"]];
 function renderEdit(){const c=C(),side=$("#side"),sc=side.scrollTop;ctlSync=[];side.className="edit";
- const bar=h("div",{class:"etabs"},...ETABS.map(([k,l])=>h("button",{class:etab===k?"on":"",onclick:()=>{etab=k;$("#side").scrollTop=0;render()}},l)));
+ const bar=h("div",{class:"etabs"},...ETABS.map(([k,l])=>h("button",{class:etab===k?"on":"",onclick:()=>{etab=k;pv=null;$("#side").scrollTop=0;render()}},l)),h("button",{class:"pvbtn"+(pvVisible()?" on":""),title:"立ち絵のプレビューを出す/隠す",innerHTML:IC_EYE,onclick:()=>{pv=!pvVisible();render()}}));
  side.replaceChildren(h("div",{class:"ed"},bar,h("div",{class:"ed-body"},etab==="basic"?editBasic(c):etab==="outfit"?editOutfitTab(c):etab==="profile"?editProfile(c):editVoice(c))));side.scrollTop=sc;requestAnimationFrame(()=>requestAnimationFrame(()=>{if(!noRestore)side.scrollTop=sc}))}
 function editBasic(c){return h("div",{},
   h("div",{class:"card"},h("h3",{},"名前など(左の画面にすぐ反映されます)"),field("名前",c,"name"),h("div",{class:"row two"},field("英語名",c,"en"),roleField(c)),h("div",{class:"row two"},field("イラスト",c,"il"),field("CV",c,"cv"))),
@@ -619,7 +629,7 @@ function renderOutfit(){const g=$("#outfit"),on=showOutfit&&!showList&&mode==="v
   h("button",{class:"owear"+(worn?" on":""),disabled:worn,onclick:()=>{track("outfit_wear");c.outfitCur=oview;wear(c);dirty();render()}},worn?"着用中":"着替"),
   h("p",{class:"onote"},"着用中のコーデが、一覧やキャラ画面にも反映されます"));
  g.replaceChildren(left,right);const sel=g.querySelector(".ostrip.sel");if(sel&&sel.scrollIntoView)sel.scrollIntoView({inline:"center",block:"nearest"})}
-function render(){renderHeader();renderStage();mode==="view"?renderView():renderEdit();paintDialog();renderGallery();renderOutfit();fitHdr();$("#stage").classList.toggle("adjust",canAdjust());updHdr()}
+function render(){renderHeader();renderStage();mode==="view"?renderView():renderEdit();paintDialog();renderGallery();renderOutfit();fitHdr();$("#stage").classList.toggle("adjust",canAdjust());updHdr();document.body.classList.toggle("ed-nopv",mode==="edit"&&!pvVisible());document.body.classList.toggle("ed-pv",mode==="edit"&&pvVisible())}
 
 /* 専用スクロールバー(平行四辺形) */
 function attachBar(sc,par){if(!sc||!par)return;if(getComputedStyle(par).position==="static")par.style.position="relative";
