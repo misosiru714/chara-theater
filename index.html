@@ -172,7 +172,7 @@ body.hdr-hide header{display:none}
 #outfit.show{display:grid;grid-template-columns:1.62fr 1fr}
 .ol{position:relative;min-width:0;overflow:hidden}
 .oart{position:absolute;inset:0}.oart .empty{position:absolute;inset:0;display:grid;place-items:center;color:#666}
-.oart img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;transform-origin:center bottom}
+.oart img{position:absolute;bottom:0;left:50%;height:100%;width:auto;min-width:100%;max-width:none;object-fit:contain;object-position:center bottom;transform-origin:center bottom}
 .oback{position:absolute;left:10px;top:10px;z-index:5;width:60px;height:40px;border-radius:0;background:#2b2b2d;border:0;color:#fff;font-size:22px;box-shadow:0 2px 8px #0005}
 .osd{position:absolute;left:6%;bottom:21%;width:20%;aspect-ratio:1;z-index:3;background:#fffc;box-shadow:0 3px 10px #0003}
 .osd::before{content:"";position:absolute;left:-8%;top:-8%;width:42%;height:36%;background:#2b2b2d;z-index:-1}
@@ -615,7 +615,7 @@ function renderOutfit(){const g=$("#outfit"),on=showOutfit&&!showList&&mode==="v
  const go=d=>{oview=(oview+d+n)%n;render()};
  const face=(f,cls)=>h("div",{class:"ofr "+cls},h("div",{class:"ofin"},o.img?faceImg(o.img,f):null));
  const left=h("div",{class:"ol"},
-  h("div",{class:"oart"},o.img?h("img",{src:url(o.img),alt:"",style:"transform:"+ftr(o.fit)}):h("div",{class:"empty"},"立ち絵がありません")),
+  h("div",{class:"oart"},o.img?h("img",{src:url(o.img),alt:"",style:"transform:translateX(-50%) "+ftr(o.fit)}):h("div",{class:"empty"},"立ち絵がありません")),
   h("button",{class:"oback",title:"戻る",onclick:()=>{showOutfit=false;render()}},"〈"),
   o.sd&&h("div",{class:"osd"},h("div",{class:"osdin"},sdImg(o.sd,o.sdfit))),
   h("button",{class:"ozoom",title:"拡大して見る",onclick:()=>openZoom(o.img)},h("i",{innerHTML:IC_ZM})),
