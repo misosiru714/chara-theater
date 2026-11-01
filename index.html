@@ -37,7 +37,8 @@ button.on{background:var(--acc);color:#000;border-color:var(--acc)}
 #status{font-size:12px;color:#999}
 main{flex:1;min-height:0;display:flex}
 #stage{position:relative;flex:1.3;min-width:0;background:linear-gradient(135deg,#e4e4e4,#a9a9a9);overflow:hidden}
-#stage img.art{transform-origin:center bottom;position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom}
+#stage img.art{transform-origin:center bottom;position:absolute;bottom:0;left:50%;height:100%;width:auto;max-width:none}
+body.art-contain #stage img.art{inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom}
 #stage .empty{position:absolute;inset:0;display:grid;place-items:center;color:#666;font-size:14px;padding:20px;text-align:center}
 #nameplate{position:absolute;left:18px;bottom:58px;color:#fff;text-shadow:0 2px 8px #000a;pointer-events:none}
 #nameplate .role{font-size:22px;font-family:var(--font);font-weight:700}
@@ -172,7 +173,8 @@ body.hdr-hide header{display:none}
 #outfit.show{display:grid;grid-template-columns:1.62fr 1fr}
 .ol{position:relative;min-width:0;overflow:hidden}
 .oart{position:absolute;inset:0}.oart .empty{position:absolute;inset:0;display:grid;place-items:center;color:#666}
-.oart img{position:absolute;bottom:0;left:50%;height:100%;width:auto;min-width:100%;max-width:none;object-fit:contain;object-position:center bottom;transform-origin:center bottom}
+.oart img{position:absolute;bottom:0;left:50%;height:100%;width:auto;max-width:none;transform-origin:center bottom}
+body.art-contain .oart img{inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom}
 .oback{position:absolute;left:10px;top:10px;z-index:5;width:60px;height:40px;border-radius:0;background:#2b2b2d;border:0;color:#fff;font-size:22px;box-shadow:0 2px 8px #0005}
 .osd{position:absolute;left:6%;bottom:21%;width:20%;aspect-ratio:1;z-index:3;background:#fffc;box-shadow:0 3px 10px #0003}
 .osd::before{content:"";position:absolute;left:-8%;top:-8%;width:42%;height:36%;background:#2b2b2d;z-index:-1}
@@ -422,7 +424,8 @@ const eo=()=>{const c=C();return c.outfits[Math.min(oe,c.outfits.length-1)]};
 function curArt(){const c=C();if(editFit()){const o=eo(),alt=o.img2&&fitT==="img2";return alt?{b:o.img2,f:o.fit2c?o.fit2:o.fit}:{b:o.img,f:o.fit}}
  const alt=c.img2&&dlgIdx!=null;return alt?{b:c.img2,f:c.fit2}:{b:c.img,f:c.fit}}
 const ftr=f=>`translate(${f.x}%,${f.y}%) scale(${f.flip?-f.s:f.s},${f.s})`;
-function applyArt(){const a=$("#stage img.art");if(!a)return;const{b,f}=curArt();a.src=url(b);a.style.transform=ftr(f)}
+const artTf=f=>(S.set&&S.set.artFit==="contain"?"":"translateX(-50%) ")+ftr(f);
+function applyArt(){const a=$("#stage img.art");if(!a)return;const{b,f}=curArt();a.src=url(b);a.style.transform=artTf(f)}
 const applyIcon=(i,o)=>{i.style.objectPosition=o.x+"% "+o.y+"%";i.style.transformOrigin=o.x+"% "+o.y+"%";i.style.transform="scale("+o.s+")"};
 const sdImg=(b,f)=>{const i=h("img",{src:url(b),alt:""});i.style.transform=ftr(f);return i};
 const faceImg=(b,o)=>{const i=h("img",{src:url(b),alt:""});applyIcon(i,o);return i};
@@ -615,7 +618,7 @@ function renderOutfit(){const g=$("#outfit"),on=showOutfit&&!showList&&mode==="v
  const go=d=>{oview=(oview+d+n)%n;render()};
  const face=(f,cls)=>h("div",{class:"ofr "+cls},h("div",{class:"ofin"},o.img?faceImg(o.img,f):null));
  const left=h("div",{class:"ol"},
-  h("div",{class:"oart"},o.img?h("img",{src:url(o.img),alt:"",style:"transform:translateX(-50%) "+ftr(o.fit)}):h("div",{class:"empty"},"立ち絵がありません")),
+  h("div",{class:"oart"},o.img?h("img",{src:url(o.img),alt:"",style:"transform:"+artTf(o.fit)}):h("div",{class:"empty"},"立ち絵がありません")),
   h("button",{class:"oback",title:"戻る",onclick:()=>{showOutfit=false;render()}},"〈"),
   o.sd&&h("div",{class:"osd"},h("div",{class:"osdin"},sdImg(o.sd,o.sdfit))),
   h("button",{class:"ozoom",title:"拡大して見る",onclick:()=>openZoom(o.img)},h("i",{innerHTML:IC_ZM})),
@@ -629,7 +632,7 @@ function renderOutfit(){const g=$("#outfit"),on=showOutfit&&!showList&&mode==="v
   h("button",{class:"owear"+(worn?" on":""),disabled:worn,onclick:()=>{track("outfit_wear");c.outfitCur=oview;wear(c);dirty();render()}},worn?"着用中":"着替"),
   h("p",{class:"onote"},"着用中のコーデが、一覧やキャラ画面にも反映されます"));
  g.replaceChildren(left,right);const sel=g.querySelector(".ostrip.sel");if(sel&&sel.scrollIntoView)sel.scrollIntoView({inline:"center",block:"nearest"})}
-function render(){renderHeader();renderStage();mode==="view"?renderView():renderEdit();paintDialog();renderGallery();renderOutfit();fitHdr();$("#stage").classList.toggle("adjust",canAdjust());updHdr();document.body.classList.toggle("ed-nopv",mode==="edit"&&!pvVisible());document.body.classList.toggle("ed-pv",mode==="edit"&&pvVisible())}
+function render(){document.body.classList.toggle("art-contain",!!(S.set&&S.set.artFit==="contain"));renderHeader();renderStage();mode==="view"?renderView():renderEdit();paintDialog();renderGallery();renderOutfit();fitHdr();$("#stage").classList.toggle("adjust",canAdjust());updHdr();document.body.classList.toggle("ed-nopv",mode==="edit"&&!pvVisible());document.body.classList.toggle("ed-pv",mode==="edit"&&pvVisible())}
 
 /* 専用スクロールバー(平行四辺形) */
 function attachBar(sc,par){if(!sc||!par)return;if(getComputedStyle(par).position==="static")par.style.position="relative";
@@ -664,7 +667,7 @@ document.addEventListener("fullscreenchange",()=>{renderHeader();if($("#ov")&&$(
 $("#hdrTog").onclick=()=>{hdrOpen=!hdrOpen;updHdr()};
 $("#bFs").onclick=toggleFs;
 /* ---------- 設定・BGM ---------- */
-const fixSet=()=>{S.order=S.order||[];S.roleIcons=S.roleIcons||{};S.set=Object.assign({bgmVol:.5,voiceVol:1,loop:true,duck:true,hideHdr:true,dlgMode:"tap"},S.set||{})};
+const fixSet=()=>{S.order=S.order||[];S.roleIcons=S.roleIcons||{};S.set=Object.assign({bgmVol:.5,voiceVol:1,loop:true,duck:true,hideHdr:true,dlgMode:"tap",artFit:"height"},S.set||{})};
 function applyVol(){if(!S.set)return;const t=S.set.duck&&playing!=null?.35:1;bgm.volume=Math.min(1,Math.max(0,S.set.bgmVol*t));audio.volume=Math.min(1,Math.max(0,S.set.voiceVol));bgm.loop=!!S.set.loop}
 function loadBgm(){if(S.bgm){bgm.src=url(S.bgm)}else{bgm.pause();bgm.removeAttribute("src");try{bgm.load()}catch(_){}}applyVol()}
 function toggleBgm(){if(!S.bgm)return;bgm.paused?bgm.play().catch(()=>alert("BGMを再生できませんでした")):bgm.pause()}
@@ -675,6 +678,7 @@ function buildSettings(){let ov=$("#ov");if(!ov){ov=h("div",{id:"ov"});ov.addEve
  const st=S.set;
  const sl=(label,key)=>{const o=h("span",{class:"pc"},Math.round(st[key]*100)+"%");const r=h("input",{type:"range",min:0,max:100,step:1,value:Math.round(st[key]*100),oninput:()=>{st[key]=r.value/100;o.textContent=r.value+"%";applyVol();dirty()}});return h("div",{class:"ctl2"},h("span",{},label),r,o)};
  const chk=(label,key)=>h("label",{class:"chk"},h("input",{type:"checkbox",checked:!!st[key],onchange:e=>{st[key]=e.target.checked;applyVol();updHdr();dirty()}}),label);
+ const artSel=h("select",{onchange:e=>{st.artFit=e.target.value;dirty();render()}},h("option",{value:"height",selected:st.artFit!=="contain"},"高さに合わせる(横長の絵は左右が切れる)"),h("option",{value:"contain",selected:st.artFit==="contain"},"全体を収める(横長の絵は上下に余白が出る)"));
  const setBgm=f=>{S.bgm=f;S.bgmName=f.name;loadBgm();dirty();buildSettings();renderHeader()};
  const rolesAll=[...new Set([...S.chars.map(c=>c.role).filter(Boolean),...Object.keys(S.roleIcons)])];
  const roleRow=r=>{const b=S.roleIcons[r];return h("div",{class:"rrow"},h("span",{class:"rpv"},b?h("img",{src:url(b),alt:""}):"なし"),h("span",{class:"rn"},r),
@@ -690,7 +694,7 @@ function buildSettings(){let ov=$("#ov");if(!ov){ov=h("div",{id:"ov"});ov.addEve
   h("div",{class:"card"},h("h3",{},"ボイス"),sl("ボイス音量","voiceVol")),h("div",{class:"card"},h("h3",{},"セリフ枠"),h("label",{},"表示のしかた"),
    h("select",{onchange:e=>{st.dlgMode=e.target.value;dirty()}},h("option",{value:"tap",selected:st.dlgMode!=="auto"},"一気に表示して、タップ(クリック)するまで残す"),h("option",{value:"auto",selected:st.dlgMode==="auto"},"1文字ずつ表示して、再生が終わると消える")),
    h("p",{class:"hint"},"初期設定は、一気に表示して、画面(立ち絵の部分やセリフ枠)をタップかクリックするまで消えない形です。")),
-  h("div",{class:"card"},h("h3",{},"表示"),
+  h("div",{class:"card"},h("h3",{},"表示"),h("label",{},"立ち絵の大きさ"),artSel,
    chk("横向きのスマホでは、ヘッダーを隠す(左上の☰で出し入れ)","hideHdr"),
    FS_OK?h("div",{class:"row"},h("button",{onclick:toggleFs},document.fullscreenElement?"全画面を解除":"全画面にする")):h("p",{class:"hint"},"このブラウザ(iPhoneのSafariなど)では、全画面表示のボタンは使えません。"),
    h("p",{class:"hint"},"スマホでは、ブラウザの共有メニューから「ホーム画面に追加」して、そこから開くと、バーなしで表示できます。")),
@@ -710,7 +714,7 @@ $("#mEdit").onclick=()=>{stopAll();mode="edit";showOutfit=false;render()};
  const start=()=>{const f=curFit(),a=pts()[0];g={x:a.x,y:a.y,o:{...f},d:ptr.size>=2?dist():0,s:f.s}};
  st.addEventListener("pointerdown",e=>{if(!canAdjust())return;ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});try{st.setPointerCapture(e.pointerId)}catch(_){}e.preventDefault();start()});
  st.addEventListener("pointermove",e=>{if(!ptr.has(e.pointerId)||!g)return;ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});const f=curFit();
-  if(ptr.size>=2&&g.d){f.s=cl(g.s*dist()/g.d,.2,4)}else if(ptr.size===1){const r=st.getBoundingClientRect(),a=pts()[0];f.x=cl(g.o.x+(a.x-g.x)/r.width*100,-100,100);f.y=cl(g.o.y+(a.y-g.y)/r.height*100,-100,100)}
+  if(ptr.size>=2&&g.d){f.s=cl(g.s*dist()/g.d,.2,4)}else if(ptr.size===1){const r=st.getBoundingClientRect(),a=pts()[0],im=st.querySelector("img.art"),iw=(im&&im.offsetWidth)||r.width,ih=(im&&im.offsetHeight)||r.height;f.x=cl(g.o.x+(a.x-g.x)/iw*100,-100,100);f.y=cl(g.o.y+(a.y-g.y)/ih*100,-100,100)}
   applyArt();syncCtl()});
  const end=e=>{if(!ptr.delete(e.pointerId))return;if(ptr.size>0)start();else{g=null;dirty()}};
  st.addEventListener("pointerup",end);st.addEventListener("pointercancel",end);
