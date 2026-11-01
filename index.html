@@ -115,6 +115,15 @@ textarea{min-height:64px;resize:vertical}
 .modal{background:#e6e6e6;color:#111;width:min(460px,100%);max-height:92vh;overflow:auto;padding:16px;border:2px solid #111}
 .modal h2{margin:0;font-size:18px;font-family:var(--font)}
 .modal .hint{margin:6px 0}
+.xlist{margin:8px 0;max-height:min(46vh,360px);overflow:auto;border:1px solid #bbb;background:#f3f3f3}
+.xrow{display:flex;align-items:center;gap:10px;padding:6px 10px;cursor:pointer;border-bottom:1px solid #ddd;font-size:14px}
+.xrow:hover{background:#fff}
+.xrow input{flex:none;width:18px;height:18px;accent-color:#2b2b2d}
+.xth{width:34px;height:46px;flex:none;background:#2b2b2d;overflow:hidden}
+.xth img{width:100%;height:100%;object-fit:cover;display:block}
+.xn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.xr{flex:none;font-size:11px;color:#555;background:#ccc;padding:1px 6px}
+.modal button:disabled{opacity:.4;cursor:default}
 .ctl2{display:grid;grid-template-columns:80px 1fr 46px;gap:8px;align-items:center;margin:8px 0;font-size:13px}
 .ctl2 input[type=range]{width:100%;accent-color:#2b2b2d}.ctl2 .pc{text-align:right}
 #gallery{display:none;flex:1;min-width:0;overflow:hidden;background:none;color:#111}
@@ -295,7 +304,7 @@ header{padding:4px 8px}header button{padding:4px 8px}
   <span class="grow"></span>
   <span id="status">読み込み中…</span>
   <div class="isl" id="islSort"></div>
-  <div class="isl" id="islFile"><button id="bZip" data-s="保存">ZIPで保存</button><button id="bLoad" data-s="読込">ZIPを読み込む</button></div>
+  <div class="isl" id="islFile"><button id="bZip" data-s="出力">ZIPで出力</button><button id="bLoad" data-s="読込">ZIPを読み込む</button></div>
   <input id="fZip" type="file" accept=".zip" hidden>
   <div class="isl" id="islSys"><button id="bFs" style="display:none" title="全画面" data-s="⛶">⛶</button><button id="bBgm" style="display:none" data-s="♪">♪ BGM</button><button id="bSet" data-s="⚙">⚙ 設定</button></div>
 </header>
@@ -346,7 +355,7 @@ async function readZip(buf){const u=new Uint8Array(buf),dv=new DataView(buf),dec
  return out}
 const MIME={png:"image/png",jpg:"image/jpeg",jpeg:"image/jpeg",webp:"image/webp",gif:"image/gif",webm:"audio/webm",mp3:"audio/mpeg",wav:"audio/wav",ogg:"audio/ogg",m4a:"audio/mp4",mp4:"audio/mp4"};
 const extOf=b=>{const t=(b.type||"").split(";")[0];return Object.keys(MIME).find(k=>MIME[k]===t&&k!=="jpeg"&&k!=="mp4")||"bin"};
-async function exportZip(idx){const files=[],enc=new TextEncoder(),list=idx==null?S.chars:[S.chars[idx]],safe=n=>(n||"character").replace(/[\\/:*?"<>|]+/g,"_");
+async function exportZip(list,withProject){const files=[],enc=new TextEncoder(),safe=n=>(n||"character").replace(/[\\/:*?"<>|]+/g,"_");
  const put=async(name,b)=>{if(!b)return null;files.push({name,data:new Uint8Array(await b.arrayBuffer())});return name};
  const man={app:"voice-viewer",version:1,chars:[]};
  for(let i=0;i<list.length;i++){const c=list[i],o={...c,voices:[]};delete o.img;delete o.img2;delete o.fit;delete o.fit2;delete o.icon;
@@ -354,10 +363,33 @@ async function exportZip(idx){const files=[],enc=new TextEncoder(),list=idx==nul
   o.outfits=[];for(let k=0;k<c.outfits.length;k++){const t=c.outfits[k];o.outfits.push({...t,img:await pk(t,k,"img"),img2:await pk(t,k,"img2"),sd:await pk(t,k,"sd")})}
   for(let j=0;j<c.voices.length;j++){const v=c.voices[j];o.voices.push({id:v.id,title:v.title,text:v.text,dur:v.dur,audio:v.audio?await put(`media/c${i}_v${j}.${extOf(v.audio)}`,v.audio):null})}
   man.chars.push(o)}
- if(idx==null){man.settings=S.set;man.roleIcons={};for(const[k,b]of Object.entries(S.roleIcons)){if(b)man.roleIcons[k]=await put("media/role_"+Object.keys(man.roleIcons).length+"."+extOf(b),b)}
+ if(withProject){man.settings=S.set;man.roleIcons={};for(const[k,b]of Object.entries(S.roleIcons)){if(b)man.roleIcons[k]=await put("media/role_"+Object.keys(man.roleIcons).length+"."+extOf(b),b)}
  if(S.bgm){man.bgm=await put("media/bgm."+extOf(S.bgm),S.bgm);man.bgmName=S.bgmName||""}}
  files.unshift({name:"project.json",data:enc.encode(JSON.stringify(man,null,1))});
- const a=h("a",{href:URL.createObjectURL(makeZip(files)),download:idx==null?"kyara_theater_project.zip":safe(list[0].name)+"_kyara_theater.zip"});a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);track("zip_export",{characters:list.length,scope:idx==null?"all":"character"})}
+ const fn=withProject&&list.length===S.chars.length?"kyara_theater_project.zip":list.length===1?safe(list[0].name)+"_kyara_theater.zip":"kyara_theater_"+list.length+"chars.zip";
+ const a=h("a",{href:URL.createObjectURL(makeZip(files)),download:fn});a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);track("zip_export",{characters:list.length,scope:withProject?"project":"selected"})}
+function openExport(){if($("#ov"))return;
+ const ov=h("div",{id:"ov"});ov.dataset.k="export";document.body.append(ov);
+ const close=()=>ov.remove();ov.addEventListener("click",e=>{if(e.target===ov)close()});
+ let items=S.chars.map((c,i)=>({c,i}));
+ if(listSort==="name")items.sort((a,b)=>(a.c.name||"").localeCompare(b.c.name||"","ja"));
+ else if(listSort==="custom"){const pos=new Map((S.order||[]).map((id,k)=>[id,k])),key=x=>pos.has(x.c.id)?pos.get(x.c.id):1e9+x.i;items.sort((a,b)=>key(a)-key(b))}
+ const sel=new Set(S.chars.map((_,i)=>i)),cbs=[];let touched=false;
+ const cnt=h("span",{class:"hint",style:"margin:0 0 0 auto"}),go=h("button",{},"出力する");
+ const proj=h("input",{type:"checkbox",checked:true,onchange:()=>{touched=true}});
+ const upd=()=>{cnt.textContent=sel.size+" / "+S.chars.length+" 人を選択中";go.disabled=!sel.size;if(!touched)proj.checked=sel.size===S.chars.length};
+ const setAll=on=>{sel.clear();if(on)S.chars.forEach((_,i)=>sel.add(i));cbs.forEach(cb=>cb.checked=on);upd()};
+ const rows=items.map(({c,i})=>{const cb=h("input",{type:"checkbox",checked:true,onchange:e=>{e.target.checked?sel.add(i):sel.delete(i);upd()}});cbs.push(cb);
+  return h("label",{class:"xrow"},cb,h("div",{class:"xth"},c.img?iconImg(c):null),h("span",{class:"xn"},c.name||"(名前なし)"),c.role?h("span",{class:"xr"},c.role):null)});
+ go.onclick=async()=>{if(!sel.size)return;const list=items.filter(x=>sel.has(x.i)).map(x=>x.c);go.disabled=true;go.textContent="書き出し中…";
+  try{await exportZip(list,proj.checked);close()}catch(e){alert("書き出し失敗: "+e.message);go.textContent="出力する";upd()}};
+ ov.append(h("div",{class:"modal",role:"dialog"},h("h2",{},"ZIPで出力"),h("p",{class:"hint"},"ZIPに入れるキャラを選んでください。"),
+  h("div",{class:"row"},h("button",{onclick:()=>setAll(true)},"全選択"),h("button",{onclick:()=>setAll(false)},"全解除"),cnt),
+  h("div",{class:"xlist"},...rows),
+  h("label",{class:"chk"},proj,"設定・BGM・クラスアイコンも含める"),
+  h("p",{class:"hint"},"全員を選ぶと初期状態でオンになります(丸ごとバックアップ向け)。一部のキャラだけ配るときはオフがおすすめ。"),
+  h("div",{class:"row"},go,h("button",{onclick:close},"キャンセル"))));
+ upd()}
 function askImport(n){closeSettings();return new Promise(res=>{const ov=h("div",{id:"ov"});ov.dataset.k="import";document.body.append(ov);const done=v=>{ov.remove();res(v)};
  ov.addEventListener("click",e=>{if(e.target===ov)done(null)});
  ov.append(h("div",{class:"modal",role:"dialog"},h("h2",{},"ZIPの読み込み"),h("p",{class:"hint"},"ZIPには、キャラが"+n+"人入っています。どう読み込みますか?"),
@@ -543,7 +575,6 @@ function editBasic(c){return h("div",{},
   h("div",{class:"card"},h("h3",{},"名前など(左の画面にすぐ反映されます)"),field("名前",c,"name"),h("div",{class:"row two"},field("英語名",c,"en"),roleField(c)),h("div",{class:"row two"},field("イラスト",c,"il"),field("CV",c,"cv"))),
   h("div",{class:"card"},h("h3",{},"背景"),h("div",{class:"row"},h("label",{},"背景色"),h("input",{type:"color",value:c.bg||"#cccccc",oninput:e=>{c.bg=e.target.value;$("#stage").style.background=c.bg;dirty()}}),h("button",{onclick:()=>{c.bg="";render();dirty()}},"既定に戻す")),
    h("p",{class:"hint"},"立ち絵や表示位置は、「コーデ」タブで設定します。")),
-  h("div",{class:"card"},h("h3",{},"書き出し"),h("button",{onclick:()=>exportZip(S.cur)},"このキャラだけZIPで書き出す"),h("p",{class:"hint"},"BGMや設定は含まず、このキャラだけが入ったZIPになります。読み込むと、別のデータにも追加できます。")),
   h("div",{class:"card"},h("button",{class:"danger",onclick:()=>{if(S.chars.length<2)return alert("最後の1人は削除できません");if(confirm(`「${c.name}」を削除しますか?`)){S.chars.splice(S.cur,1);S.cur=0;showList=true;render();dirty()}}},"このキャラを削除")))}
 function roleField(c){const f=field("クラス表示",c,"role","前衛");f.querySelector("input").setAttribute("list","rolelist");
  f.append(h("datalist",{id:"rolelist"},...[...new Set(S.chars.map(x=>x.role).filter(Boolean))].map(n=>h("option",{value:n}))));return f}
@@ -723,7 +754,7 @@ attachBar($("#side"),$("main"));
 if(window.ResizeObserver){new ResizeObserver(()=>fitGrid()).observe($("#gallery"));new ResizeObserver(()=>fitHdr()).observe($("header"))}
 $("#stage").addEventListener("click",()=>{if(dlgIdx!=null){dlgIdx=null;paintDialog()}});
 $("#bList").onclick=()=>{stopAll();showOutfit=false;showList=!showList;render()};
-$("#bZip").onclick=()=>exportZip();
+$("#bZip").onclick=openExport;
 $("#bLoad").onclick=()=>$("#fZip").click();
 $("#fZip").onchange=e=>{if(e.target.files[0])importZip(e.target.files[0]);e.target.value=""};
 (async()=>{try{const d=await kv("get","main");if(d&&d.chars&&d.chars.length)S=d}catch(e){}
