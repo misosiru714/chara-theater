@@ -575,6 +575,7 @@ function editBasic(c){return h("div",{},
   h("div",{class:"card"},h("h3",{},"名前など(左の画面にすぐ反映されます)"),field("名前",c,"name"),h("div",{class:"row two"},field("英語名",c,"en"),roleField(c)),h("div",{class:"row two"},field("イラスト",c,"il"),field("CV",c,"cv"))),
   h("div",{class:"card"},h("h3",{},"背景"),h("div",{class:"row"},h("label",{},"背景色"),h("input",{type:"color",value:c.bg||"#cccccc",oninput:e=>{c.bg=e.target.value;$("#stage").style.background=c.bg;dirty()}}),h("button",{onclick:()=>{c.bg="";render();dirty()}},"既定に戻す")),
    h("p",{class:"hint"},"立ち絵や表示位置は、「コーデ」タブで設定します。")),
+  h("div",{class:"card"},h("h3",{},"書き出し"),h("button",{onclick:()=>exportZip([S.chars[S.cur]],false)},"このキャラだけZIPで書き出す"),h("p",{class:"hint"},"BGMや設定は含まず、このキャラだけが入ったZIPになります。読み込むと、別のデータにも追加できます。複数キャラをまとめて出したいときは、一覧画面の「ZIPで出力」を使ってね。")),
   h("div",{class:"card"},h("button",{class:"danger",onclick:()=>{if(S.chars.length<2)return alert("最後の1人は削除できません");if(confirm(`「${c.name}」を削除しますか?`)){S.chars.splice(S.cur,1);S.cur=0;showList=true;render();dirty()}}},"このキャラを削除")))}
 function roleField(c){const f=field("クラス表示",c,"role","前衛");f.querySelector("input").setAttribute("list","rolelist");
  f.append(h("datalist",{id:"rolelist"},...[...new Set(S.chars.map(x=>x.role).filter(Boolean))].map(n=>h("option",{value:n}))));return f}
