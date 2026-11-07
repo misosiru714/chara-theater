@@ -292,6 +292,15 @@ header{padding:4px 8px}header button{padding:4px 8px}
 .tile .cls{padding:3px 12px 3px 6px}
 }
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+#side .msform .card{padding:0}#side .msform summary{cursor:pointer;padding:13px 14px;font-weight:700;list-style:none;display:flex;justify-content:space-between}#side .msform summary::-webkit-details-marker{display:none}
+#side .msform summary::after{content:"▾"}#side .msform details[open] summary::after{content:"▴"}#side .msform details[open] summary{border-bottom:1px solid #8884}
+#side .msform details>*:not(summary){margin-left:14px;margin-right:14px}#side .msform details>*:last-child{margin-bottom:14px}
+#side .msform h5{margin-top:14px;margin-bottom:0;font-size:12px;color:#666}
+#side .msform .pf{display:block;margin-top:10px;margin-bottom:0}#side .msform .pf span{display:block;font-size:12px;color:#555;margin-bottom:3px}#side .msform .pf em{color:#b36b00}
+#side .msform input:not([type=checkbox]):not([type=range]):not([type=color]):not([type=file]),#side .msform textarea,#side .msform select{width:100%;padding:8px;border:1px solid #888;background:#fff;color:#111;font:inherit}
+#side .msform input[type=range]{width:100%}#side .msform button{margin-top:8px}
+#side .msform .rg{display:grid;grid-template-columns:repeat(11,1fr);gap:2px;margin-top:10px}#side .msform .rg button{margin:0;padding:0;aspect-ratio:1;border:1px solid #777;background:#ddd;min-width:0}#side .msform .rg button.on{background:#555}#side .msform .rg button.o{background:#fff;border:2px solid #000;box-shadow:inset 0 0 0 3px #000}
+#side .msform .pn{font-size:12px;color:#666;margin-top:6px}
 </style>
 </head>
 <body>
@@ -442,8 +451,8 @@ async function startRec(i){try{const st=await navigator.mediaDevices.getUserMedi
 /* ---------- 描画 ---------- */
 const SHOW_ROLE_ICON=false; // 職業アイコン表示の切り替え(trueで再開)
 const roleSrc=r=>{const b=(S.roleIcons||{})[r];return b?url(b):""};
-let showList=false,tab=null,etab="basic",fitT="img",ctlSync=[],showOutfit=false,oview=0,oe=0,noRestore=false,pv=null,showMs=false,msFrom=false;
-const usesMs=()=>!!window.matchMedia&&matchMedia(MS_MQ).matches,msOn=()=>showMs&&!showList&&usesMs();
+let showList=false,tab=null,etab="basic",fitT="img",ctlSync=[],showOutfit=false,oview=0,oe=0,noRestore=false,pv=null,showMs=false,msFrom=false,showStat=false;
+const usesMs=()=>!!window.matchMedia&&matchMedia(MS_MQ).matches,msOn=()=>showMs&&!showList&&usesMs(),statOn=()=>showStat&&!showList&&!msOn()&&mode==="view";
 const fitDef=()=>({s:1,x:0,y:0,flip:false}),iconDef=()=>({s:1,x:50,y:15});
 const fdFace=()=>({s:1.6,x:50,y:14});
 function fixOutfit(o){o.id||(o.id=uid());if(o.name==null)o.name="コーデ";if(o.label==null)o.label="OUTFIT";["series","illust","desc"].forEach(k=>{if(o[k]==null)o[k]=""});o.accent||(o.accent="#2b2b2d");
@@ -472,8 +481,10 @@ const IC_IL='<svg viewBox="0 0 24 24"><path d="M9 2h6v2h3a1 1 0 0 1 1 1v7h-2V6H6
 const IC_CV='<svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3zM7 11h2a3 3 0 0 0 6 0h2a5 5 0 0 1-4 4.9V19h3v2H8v-2h3v-3.1A5 5 0 0 1 7 11z"/></svg>';
 const IC_OF='<svg viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2.5a3.2 3.2 0 0 0-3.2 3.2h2.2a1 1 0 1 1 1.6.8c-.5.4-1.1.8-1.1 1.7v1L3.4 15a1.7 1.7 0 0 0 1 3h15.2a1.7 1.7 0 0 0 1-3L13 9.2v-.6c1.2-.6 2.2-1.6 2.2-2.9A3.2 3.2 0 0 0 12 2.5zM12 11.6l6.6 4.6H5.4z"/></svg>';
 const IC_ZM='<svg viewBox="0 0 24 24"><circle cx="10" cy="10" r="6.5" fill="none" stroke="#222" stroke-width="2"/><path d="M15 15l6 6M7.5 10h5M10 7.5v5" stroke="#222" stroke-width="2" stroke-linecap="round" fill="none"/></svg>';
-const TABS=[{k:"profile",label:"プロファイル",ic:IC_IL},{k:"voice",label:"ボイス",ic:IC_CV},{k:"outfit",label:"コーデ",ic:IC_OF}];
-function openTab(k){if(k==="outfit"){track("outfit_open");showOutfit=true;oview=C().outfitCur}else tab=k;render()}
+const IC_ST='<svg viewBox="0 0 24 24"><path d="M4 20V11h4v9H4zm6 0V4h4v16h-4zm6 0v-6h4v6h-4z"/></svg>';
+const TABS=[{k:"profile",label:"プロファイル",ic:IC_IL},{k:"voice",label:"ボイス",ic:IC_CV},{k:"outfit",label:"コーデ",ic:IC_OF},{k:"status",label:"ステータス",ic:IC_ST}];
+const TABSV=()=>TABS.filter(t=>t.k!=="status"||!usesMs());
+function openTab(k){if(k==="outfit"){track("outfit_open");showOutfit=true;oview=C().outfitCur}else if(k==="status"){showStat=true}else tab=k;render()}
 const cr=(ic,t,mark)=>h("div",{class:"cr"},h("i",{innerHTML:ic}),h("span",{},t),mark&&h("b",{},mark));
 const icoBox=(ic,cls="ico")=>[h("i",{innerHTML:ic}),h("b",{},"＋")];
 
@@ -501,13 +512,13 @@ function enableDrag(gg,items){const tiles=[...gg.querySelectorAll(".tile:not(.ad
    if(touch)timer=setTimeout(begin,380)})})}
 function toast(m){let t=$("#toast");if(!t){t=h("div",{id:"toast"});document.body.append(t)}t.textContent=m;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),2600)}
 function fitHdr(){const hd=$("header");if(hd)document.documentElement.style.setProperty("--hdrH",hd.offsetHeight+"px")}
-function renderGallery(){const g=$("#gallery");g.classList.toggle("show",showList);$("#stage").style.display=$("#side").style.display=(showList||showOutfit||msOn())?"none":"";if(!showList)return;
+function renderGallery(){const g=$("#gallery");g.classList.toggle("show",showList);$("#stage").style.display=$("#side").style.display=(showList||showOutfit||msOn()||statOn())?"none":"";if(!showList)return;
  const roles=[...new Set(S.chars.map(c=>c.role).filter(Boolean))];if(listRole!=="ALL"&&!roles.includes(listRole))listRole="ALL";
  const items=S.chars.map((c,i)=>({c,i})).filter(x=>listRole==="ALL"||x.c.role===listRole);
  if(listSort==="name")items.sort((a,b)=>(a.c.name||"").localeCompare(b.c.name||"","ja"));
  else if(listSort==="custom"){const pos=new Map((S.order||[]).map((id,k)=>[id,k])),key=x=>pos.has(x.c.id)?pos.get(x.c.id):1e9+x.i;items.sort((a,b)=>key(a)-key(b))}
  const canDrag=listSort==="custom"&&listRole==="ALL";
- const tile=({c,i})=>h("button",{class:"tile"+(i===S.cur?" cur":""),title:c.name,onclick:()=>{S.cur=i;showList=false;showOutfit=false;showMs=true;tab=null;stopAll();render();dirty()}},
+ const tile=({c,i})=>h("button",{class:"tile"+(i===S.cur?" cur":""),title:c.name,onclick:()=>{S.cur=i;showList=false;showOutfit=false;showMs=true;showStat=false;tab=null;stopAll();render();dirty()}},
   h("div",{class:"art"},c.img?iconImg(c):"立ち絵なし"),c.role&&h("span",{class:"cls"},c.role),
   SHOW_ROLE_ICON&&roleSrc(c.role)&&h("div",{class:"rk"},h("img",{src:roleSrc(c.role),alt:c.role})),h("div",{class:"band"},h("span",{class:"nm"},c.name||"(名前なし)")));
  const add=h("button",{class:"tile add",title:"キャラを追加",onclick:()=>{track("character_add");S.chars.push(newChar());S.cur=S.chars.length-1;showList=false;tab=null;mode="edit";etab="basic";render();dirty()}},h("span",{class:"plus"},"＋"));
@@ -530,11 +541,11 @@ function renderStage(){const c=C(),st=$("#stage");st.replaceChildren();
 
 /* 見るモード: カード(格納)→タブ展開 */
 function renderView(){const c=C(),side=$("#side");
- if(!tab){side.className="cards";side.replaceChildren(...TABS.map(t=>h("button",{class:"card-tab",onclick:()=>openTab(t.k)},h("span",{class:"ico"},...icoBox(t.ic)),h("span",{class:"ct-label"},t.label))));return}
+ if(!tab){side.className="cards";side.replaceChildren(...TABSV().map(t=>h("button",{class:"card-tab",onclick:()=>openTab(t.k)},h("span",{class:"ico"},...icoBox(t.ic)),h("span",{class:"ct-label"},t.label))));return}
  side.className="open";const T=TABS.find(x=>x.k===tab);
  const head=h("div",{class:"vhead"},h("button",{class:"ico",title:"閉じる",onclick:()=>{tab=null;render()}},...icoBox(T.ic)),h("span",{class:"vh-line"}),h("span",{class:"vh-label"},T.label));
  const body=h("div",{class:"vbody"},tab==="voice"?voiceList(c):profileView(c));
- const rail=h("div",{class:"rail"},...TABS.filter(t=>t.k!==tab).map(t=>h("button",{class:"ico",title:t.label,onclick:()=>openTab(t.k)},...icoBox(t.ic))));
+ const rail=h("div",{class:"rail"},...TABSV().filter(t=>t.k!==tab).map(t=>h("button",{class:"ico",title:t.label,onclick:()=>openTab(t.k)},...icoBox(t.ic))));
  side.replaceChildren(h("div",{class:"vmain"},head,body),rail);attachBar(body,$(".vmain"));paintList()}
 function voiceList(c){return c.voices.length?c.voices.map((v,i)=>h("button",{class:"vbtn",onclick:()=>play(i)},h("span",{class:"ic"},"▶"),h("span",{class:"tt"},v.title||"(無題)"),!v.audio&&h("span",{class:"noa"},"音声なし"),h("span",{class:"bar"}))):h("p",{class:"hint"},"ボイスがありません。「作る」モードの「ボイス」で追加してね。")}
 function profileView(c){return c.profile.length?c.profile.map(p=>h("div",{},h("div",{class:"ph"},p.title||"(見出しなし)"),h("div",{class:"pt"},...fmt(p.text||"")))):h("p",{class:"hint"},"プロファイルがありません。「作る」モードの「プロファイル」で追加してね。")}
@@ -570,10 +581,10 @@ const ctrl=(a,i)=>h("div",{class:"row tight"},h("button",{title:"上へ",disable
 /* 作るモード: 基本 / プロファイル / ボイス */
 const pvVisible=()=>pv===null?etab==="outfit":pv;
 const IC_EYE='<svg viewBox="0 0 24 24"><path d="M12 5C6 5 2 12 2 12s4 7 10 7 10-7 10-7-4-7-10-7zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8z"/><circle cx="12" cy="12" r="1.8"/></svg>';
-const ETABS=[["basic","基本"],["outfit","コーデ"],["profile","プロファイル"],["voice","ボイス"]];
+const ETABS=[["basic","基本"],["outfit","コーデ"],["profile","プロファイル"],["voice","ボイス"],["status","ステータス"]];
 function renderEdit(){const c=C(),side=$("#side"),sc=side.scrollTop;ctlSync=[];side.className="edit";
- const bar=h("div",{class:"etabs"},...ETABS.map(([k,l])=>h("button",{class:etab===k?"on":"",onclick:()=>{etab=k;pv=null;$("#side").scrollTop=0;render()}},l)),h("button",{class:"pvbtn"+(pvVisible()?" on":""),title:"立ち絵のプレビューを出す/隠す",innerHTML:IC_EYE,onclick:()=>{pv=!pvVisible();render()}}));
- side.replaceChildren(h("div",{class:"ed"},bar,h("div",{class:"ed-body"},etab==="basic"?editBasic(c):etab==="outfit"?editOutfitTab(c):etab==="profile"?editProfile(c):editVoice(c))));side.scrollTop=sc;requestAnimationFrame(()=>requestAnimationFrame(()=>{if(!noRestore)side.scrollTop=sc}))}
+ const bar=h("div",{class:"etabs"},...ETABS.filter(([k])=>k!=="status"||!usesMs()).map(([k,l])=>h("button",{class:etab===k?"on":"",onclick:()=>{etab=k;pv=null;$("#side").scrollTop=0;render()}},l)),h("button",{class:"pvbtn"+(pvVisible()?" on":""),title:"立ち絵のプレビューを出す/隠す",innerHTML:IC_EYE,onclick:()=>{pv=!pvVisible();render()}}));
+ side.replaceChildren(h("div",{class:"ed"},bar,h("div",{class:"ed-body"},etab==="basic"?editBasic(c):etab==="outfit"?editOutfitTab(c):etab==="profile"?editProfile(c):etab==="status"?MS.form():editVoice(c))));side.scrollTop=sc;requestAnimationFrame(()=>requestAnimationFrame(()=>{if(!noRestore)side.scrollTop=sc}))}
 function editBasic(c){return h("div",{},
   h("div",{class:"card"},h("h3",{},"名前など(左の画面にすぐ反映されます)"),field("名前",c,"name"),h("div",{class:"row two"},field("英語名",c,"en"),roleField(c)),h("div",{class:"row two"},field("イラスト",c,"il"),field("CV",c,"cv"))),
   h("div",{class:"card"},h("h3",{},"背景"),h("div",{class:"row"},h("label",{},"背景色"),h("input",{type:"color",value:c.bg||"#cccccc",oninput:e=>{c.bg=e.target.value;$("#stage").style.background=c.bg;dirty()}}),h("button",{onclick:()=>{c.bg="";render();dirty()}},"既定に戻す")),
@@ -802,23 +813,66 @@ function place(){if(!pk)return;const a=$("#ui").querySelector(`[data-ed="${pk}"]
  const h=pop.offsetHeight;x=Math.max(8,Math.min(innerWidth-w-8,x));pop.style.left=x+"px";pop.style.top=Math.max(8,Math.min(innerHeight-h-8,r.top))+"px"}
 function renderPop(){const c=V(),F=pk&&FS[pk];pop.style.display=F?"block":"none";if(!F)return;pop.innerHTML="";
  const hd=el(`<div class="ph2"><b>${TT[pk.replace(/\d+$/,"")]||""}</b><button>✕</button></div>`);hd.lastChild.onclick=()=>{pk=null;renderPop()};pop.append(hd);
- F(c).forEach(([lb,ty,get,set,op])=>{
-  if(ty==="g"){const g=el(`<div class="rg"></div>`),R=c.range,CX=5,CY=5,on=(x,y)=>R.cells.some(p=>p[0]===x&&p[1]===y);
-   for(let y=-CY;y<=CY;y++)for(let x=-CX;x<=CX;x++){const b=document.createElement("button"),me=x===0&&y===0;b.className=me?"o":on(x,y)?"on":"";
-    b.onclick=()=>{if(me)return;if(on(x,y))R.cells=R.cells.filter(p=>!(p[0]===x&&p[1]===y));else R.cells.push([x,y]);chg();renderPop()};g.append(b)}
-   pop.append(g,el(`<div class="pn">中央の白いマスが自分。クリックで攻撃範囲のマスを追加/削除</div>`));return}
-  if(ty==="b"){const b=document.createElement("button");b.textContent=lb;b.onclick=()=>{set();chg();renderPop()};pop.append(b);return}
-  const w=el(`<label class="pf"><span>${lb}</span></label>`),i=document.createElement(ty==="a"?"textarea":ty==="s"?"select":"input");
-  if(ty==="a")i.rows=4;if(ty==="s")op.forEach(o=>i.add(new Option(o,o)));
-  if("nckrf".includes(ty))i.type={n:"number",c:"color",k:"checkbox",r:"range",f:"file"}[ty];
-  if(ty==="f")i.accept="image/*";if(op&&(ty==="n"||ty==="r")){i.min=op[0];i.max=op[1]}
-  if(ty==="k")i.checked=get();else if(ty==="c")i.value=hex6(get());else if(ty!=="f")i.value=get();
-  i[ty==="s"||ty==="k"||ty==="f"?"onchange":"oninput"]=e=>{if(ty==="f"){const f=e.target.files[0];if(f)set(f);e.target.value=""}else set(ty==="k"?i.checked:i.value);chg();if(ty==="k"||ty==="f")renderPop();place()};
-  w.append(i);if(ty==="r"){const rv=el(`<em style="font-style:normal;color:#f4c20d"> ${i.value}</em>`);w.firstChild.append(rv);i.addEventListener("input",()=>{rv.textContent=" "+i.value})}pop.append(w)});
+ mkFields(F(c),pop,{chg,rr:renderPop,place});
  place()}
 $("#ui").addEventListener("click",e=>{const t=e.target.closest("[data-ed]");if(!edit()||!t||e.target.closest("[data-ic]"))return;e.preventDefault();e.stopPropagation();lastR=t.getBoundingClientRect();pk=t.dataset.ed;renderPop()},true);
 $("#art").addEventListener("click",e=>{if(!edit())return;lastR={left:e.clientX,right:e.clientX,top:e.clientY};pk="art";renderPop()});
 document.addEventListener("mousedown",e=>{if(!pk)return;const p=e.composedPath();if(p.includes(pop)||p.some(n=>n.dataset&&n.dataset.ed!==undefined))return;pk=null;renderPop()});
+
+ /* ===== 項目の入力部品(PCの編集パネルと、スマホのフォームで共通) ===== */
+ function mkFields(rows,parent,o){const c=V();rows.forEach(([lb,ty,get,set,op])=>{
+  if(ty==="g"){const g=el(`<div class="rg"></div>`),R=c.range,CX=5,CY=5,on=(x,y)=>R.cells.some(p=>p[0]===x&&p[1]===y);
+   for(let y=-CY;y<=CY;y++)for(let x=-CX;x<=CX;x++){const b=document.createElement("button"),me=x===0&&y===0;b.type="button";b.className=me?"o":on(x,y)?"on":"";
+    b.onclick=()=>{if(me)return;if(on(x,y))R.cells=R.cells.filter(p=>!(p[0]===x&&p[1]===y));else R.cells.push([x,y]);o.chg();o.rr()};g.append(b)}
+   parent.append(g,el(`<div class="pn">中央の白いマスが自分。${o.tap?"タップ":"クリック"}で攻撃範囲のマスを追加/削除</div>`));return}
+  if(ty==="b"){const b=document.createElement("button");b.type="button";b.textContent=lb;b.onclick=()=>{set();o.chg();o.rr()};parent.append(b);return}
+  const w=el(`<label class="pf"><span>${lb}</span></label>`),i=document.createElement(ty==="a"?"textarea":ty==="s"?"select":"input");
+  if(ty==="a")i.rows=4;if(ty==="s")op.forEach(v=>i.add(new Option(v,v)));
+  if("nckrf".includes(ty))i.type={n:"number",c:"color",k:"checkbox",r:"range",f:"file"}[ty];
+  if(ty==="f")i.accept="image/*";if(op&&(ty==="n"||ty==="r")){i.min=op[0];i.max=op[1]}
+  if(ty==="k")i.checked=get();else if(ty==="c")i.value=hex6(get());else if(ty!=="f")i.value=get();
+  i[ty==="s"||ty==="k"||ty==="f"?"onchange":"oninput"]=e=>{if(ty==="f"){const f=e.target.files[0];if(f)set(f);e.target.value=""}else set(ty==="k"?i.checked:i.value);o.chg();if(ty==="k"||ty==="f")o.rr();if(o.place)o.place()};
+  w.append(i);if(ty==="r"){const rv=el(`<em style="font-style:normal;color:#f4c20d"> ${i.value}</em>`);w.firstChild.append(rv);i.addEventListener("input",()=>{rv.textContent=" "+i.value})}parent.append(w)})}
+ FS.icons=c=>[["職業アイコン(左下)","f",0,u=>setImg(c,"cls",u)],["画像を外す","b",0,()=>delImg(c,"cls")],["信頼度のアイコン","f",0,u=>setImg(c,"trust",u)],["画像を外す","b",0,()=>delImg(c,"trust")],["召喚物のアイコン","f",0,u=>setImg(c,"extra",u)],["画像を外す","b",0,()=>delImg(c,"extra")]];
+ /* ===== スマホ(PCでない画面)の「作る」: ステータスのフォーム ===== */
+ const openG=new Set(["name"]);
+ const GR=[["name","名前・星",["name"]],["lv","信頼度・レベル",["trust","lv"]],["mk","昇進・潜在",["elite","pot"]],["st","ステータス(8個)",[0,1,2,3,4,5,6,7].map(i=>"st"+i)],["s0","スキル1",["sk0"]],["s1","スキル2",["sk1"]],["s2","スキル3",["sk2"]],["cl","職分・モジュール",["cls"]],["rg","攻撃範囲",["range"]],["tg","タグ・召喚物",["tags"]],["ic","マーク(アイコン画像)",["icons"]],["em","陣営アイコン",["emb"]],["ar","メイン画面の絵",["art"]]];
+ function form(){const c=V(),root=h("div",{class:"msform"},h("p",{class:"hint"},"メイン画面(ステータス)の内容を入力します。見るモードの「ステータス」に表示されます。"));
+  GR.forEach(([g,title,keys])=>{const d=document.createElement("details");d.className="card";d.open=openG.has(g);d.addEventListener("toggle",()=>{if(d.open)openG.add(g);else openG.delete(g)});d.append(h("summary",{},title));
+   keys.forEach(k=>{if(g==="st")d.append(h("h5",{},c.lb[+k.slice(2)]));mkFields(FS[k](c),d,{chg:()=>dirty(),rr:()=>render(),tap:1})});root.append(d)});return root}
+ /* ===== スマホ(PCでない画面)の「見る」: 縦長のステータス画面 ===== */
+ const hostM=document.createElement("div");hostM.id="msm";document.body.append(hostM);
+ const RM=hostM.attachShadow({mode:"open"});RM.innerHTML=`<style>:host{display:none;position:fixed;left:0;right:0;bottom:0;top:var(--hdrH,0px);z-index:30;overflow-y:auto;-webkit-overflow-scrolling:touch;background:linear-gradient(135deg,#e4e4e4,#a9a9a9);color:#fff;font-family:"Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif} :host(.show){display:block}*{box-sizing:border-box} #wrap{max-width:600px;margin:0 auto;padding-bottom:48px} .hero{position:relative;height:min(100vw,54vh);overflow:hidden;--m:calc(min(100vw,54vh)/115.9)} .aw{position:absolute;inset:0;transform-origin:center} .hero img.art{position:absolute;bottom:0;left:50%;height:100%;width:auto;max-width:none;transform-origin:center bottom} :host(.contain) .hero img.art{inset:0;left:0;width:100%;height:100%;object-fit:contain;object-position:center bottom} .noart{position:absolute;left:0;right:0;top:44%;text-align:center;color:#0007;font-size:14px} .emb{position:absolute;left:calc(14*var(--m));top:calc(9*var(--m));color:#fff;pointer-events:none}.emb img,.emb svg{width:100%;height:100%;object-fit:contain} .back{position:absolute;left:8px;top:8px;z-index:3;background:rgba(28,28,30,.92);color:#fff;border:0;padding:8px 14px;font:inherit;font-size:14px} .nm{position:absolute;left:12px;right:12px;bottom:10px;text-shadow:0 2px 10px #000b} .stars{display:flex}.stars svg{width:20px;height:20px;margin-right:-3px}.en{font-size:16px;line-height:1.2}.ja{font-weight:500;line-height:1.1;white-space:nowrap} .trust{position:relative;margin:0;padding:8px 12px 12px;background:linear-gradient(90deg,#fffe,#fffc);color:#222;display:flex;align-items:center;justify-content:space-between;font-size:15px;font-weight:700} .trust u{position:absolute;left:8px;bottom:4px;height:4px;background:#f08a4b}.tv{display:flex;align-items:center;gap:6px;font-weight:400}.ti{width:22px;height:22px;background:#3a3a3c;display:block}.ti img{width:100%;height:100%;object-fit:contain} .sec{margin:10px 10px 0;background:rgba(44,44,46,.92);padding:10px 12px} .sec h4{margin:0 0 8px;font-size:13px;color:#bbb;font-weight:600;display:flex;justify-content:space-between}.sec h4 em{font-style:normal;color:#fff} .sec h5{margin:12px 0 4px;font-size:12px;color:#aaa;font-weight:600} .lv{display:grid;grid-template-columns:auto 1fr;gap:10px 14px;align-items:center} .ringw{position:relative;width:76px;height:76px}.ring{position:relative;width:76px;height:76px}.ring svg{position:absolute;inset:0}.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:30px;font-weight:700;padding-top:6px}.ring small{position:absolute;top:10px;left:0;right:0;text-align:center;font-size:10px}.mxl{position:absolute;right:-10px;bottom:-4px;font-size:12px} .exp{background:rgba(255,255,255,.08);padding:8px 10px;display:flex;align-items:center;gap:8px;font-size:15px}.exp small{font-size:10px;color:#aaa}.exp em{margin-left:auto;font-style:normal;color:#fff6;font-size:12px;border:1px solid #fff3;padding:1px 8px} .mks{grid-column:1/3;display:grid;grid-template-columns:1fr 1fr;gap:8px}.mkb{background:rgba(255,255,255,.08);display:flex;align-items:center;gap:10px;padding:6px 10px;min-height:56px;font-size:15px}.mkb img{width:48px;height:44px;object-fit:contain}.nomk{width:48px;height:44px} .sg{display:grid;grid-template-columns:1fr 1fr;grid-auto-flow:column;grid-template-rows:repeat(4,auto);gap:6px 10px}.sc{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);padding:6px 8px} .sc i{width:30px;height:30px;flex:none;background:#111;display:grid;place-items:center}.sc i svg{width:20px;height:20px}.sc i img{width:100%;height:100%;object-fit:contain}.sc small{display:block;font-size:10px;color:#aaa}.sc b{font-weight:500;font-size:17px} .sk3{display:flex;gap:12px}.skb{background:none;border:0;color:#fff;padding:0;text-align:center;width:72px;font:inherit}.skb .ic{position:relative;width:72px;height:72px;overflow:hidden;border:2px solid #fff9}.skb.on .ic{border-color:#2f9be6}.skb small{display:block;margin-top:4px;font-size:11px;line-height:1.2} .sp{position:absolute;right:3px;bottom:1px;font-size:11px;text-shadow:0 0 3px #000,0 0 3px #000} .skd{margin-top:10px}.chs{display:flex;flex-wrap:wrap;gap:4px}.chs span{font-size:12px;padding:1px 8px}.txt{font-size:14px;line-height:1.6;margin-top:6px;white-space:pre-wrap}.kb{color:#4aaef5}.ko{color:#f5a03a}.mu{color:#aaa;font-size:13px;margin:0} .cl{display:flex;align-items:center;gap:10px}.ci{width:44px;height:44px;background:#4a4a4d;border:2px solid #fff3;flex:none}.ci img{width:100%;height:100%;object-fit:contain}.cn b{font-size:17px;font-weight:500;display:block}.cn small{color:#bbb;font-size:12px} .mods{display:flex;gap:8px;margin-top:10px}.md{width:60px;text-align:center}.mi{width:60px;height:60px;background:#222;border:2px solid #fff6;display:grid;place-items:center}.md.on .mi{border-color:#2f9be6}.mi svg{width:30px;height:30px}.mi img{width:100%;height:100%;object-fit:contain}.md small{display:block;font-size:10px;margin-top:2px} .mn{margin-top:8px;font-size:15px}.tal{margin-top:6px}.chip{background:#eee;color:#222;font-size:13px;padding:1px 8px;font-weight:600;display:inline-block} .rr{display:flex;gap:14px;align-items:flex-start}.rgm{position:relative;flex:none;background:rgba(255,255,255,.06);padding:0}.rgm i{position:absolute;border:2px solid #fff7}.rgm i.o{background:#fff;border-color:#fff} .tgs{display:flex;flex-wrap:wrap;gap:6px}.tg{background:rgba(255,255,255,.14);padding:4px 10px;font-size:14px}.tg.ex{display:inline-flex;align-items:center;gap:6px}.tg.ex i{width:20px;height:20px;background:#3a3a3c;display:block}.tg.ex i img{width:100%;height:100%;object-fit:contain} </style><div id="wrap"></div>`;
+ let msel=null;
+ function paintM(){const on=statOn();hostM.classList.toggle("show",on);hostM.classList.toggle("contain",!!(S.set&&S.set.artFit==="contain"));if(!on)return;buildM()}
+ function buildM(){const c=V(),rc=C(),own=c.imgs.art,ab=own||rc.img,T=c.at,E=c.emb,p=c.panel,b=c.bp,wrap=RM.getElementById("wrap");
+  hostM.style.background=rc.bg||"linear-gradient(135deg,#e4e4e4,#a9a9a9)";
+  const ski=c.skills.map((s,i)=>({s,i})).filter(x=>!x.s.empty);
+  if(msel===null||!c.skills[msel]||c.skills[msel].empty)msel=(ski.find(x=>x.s.sel)||ski[0]||{i:null}).i;
+  const sx=msel!==null?skx(c,msel):null,mk=(k,d)=>U(c,k)?`<img src="${U(c,k)}" alt="">`:d;
+  const nm=c.name||"",est=[...nm].reduce((a,ch)=>a+(ch.charCodeAt(0)<256?.58:1),0)||1,fs=Math.max(16,Math.min(40,Math.floor(320/est)));
+  const rcs=c.range.cells.concat([[0,0]]),x0=Math.min(...rcs.map(q=>q[0])),x1=Math.max(...rcs.map(q=>q[0])),y0=Math.min(...rcs.map(q=>q[1])),y1=Math.max(...rcs.map(q=>q[1])),cs=Math.min(24,Math.floor(200/(x1-x0+1)));
+  const rg=c.range.cells.map(q=>`<i style="left:${(q[0]-x0)*cs}px;top:${(q[1]-y0)*cs}px;width:${cs-2}px;height:${cs-2}px"></i>`).join("")+`<i class="o" style="left:${(0-x0)*cs}px;top:${(0-y0)*cs}px;width:${cs-2}px;height:${cs-2}px"></i>`;
+  wrap.innerHTML=`
+  <div class="hero"><div class="aw" style="transform:translate(${T.x}%,${T.y}%) scale(${T.z/100})">${ab?`<img class="art" src="${url(ab)}" alt="">`:`<div class="noart">立ち絵がありません</div>`}</div>
+   <div class="emb" style="opacity:${E.op};width:calc(${E.sz}*var(--m));height:calc(${E.sz}*var(--m));transform:translate(calc(${E.x}*var(--m)),calc(${E.y}*var(--m)))">${U(c,"emb")?`<img src="${U(c,"emb")}" alt="">`:EMB}</div>
+   <button class="back" data-back>〈 戻る</button>
+   <div class="nm"><div class="stars">${Array.from({length:6},(_,i)=>`<span style="color:${i<c.stars?"#fff":"#fff6"}">${IC.star}</span>`).join("")}</div><div class="en">${esc(c.en||"")}</div><div class="ja" style="font-size:${fs}px">${esc(nm)}</div></div></div>
+  <div class="trust"><span class="tl">信頼度</span><span class="tv"><i class="ti">${mk("trust","")}</i>${c.trust}%</span><u style="width:calc((100% - 16px)*${Math.min(100,c.trust/2)/100})"></u></div>
+  <div class="sec lv"><div class="ringw"><div class="ring">${ring(c)}<b>${c.lv}</b><small>LV</small></div><span class="mxl">/${c.max}</span></div>
+   <div class="exp"><small>EXP</small><span>${c.ex?c.ex[0]+" / "+c.ex[1]:"–/–"}</span>${c.ex?"":"<em>MAX</em>"}</div>
+   <div class="mks"><div class="mkb">${c.el?`<img src="${ELM[c.el]}" alt="">`:`<span class="nomk"></span>`}<span>昇進${c.el===2?" MAX":""}</span></div><div class="mkb"><img src="${POTM[c.pt]}" alt=""><span>潜在${c.pt===5?" MAX":""}</span></div></div></div>
+  <div class="sec"><h4>ステータス</h4><div class="sg">${c.stats.map((v,i)=>`<div class="sc"><i>${U(c,"st"+i)?`<img src="${U(c,"st"+i)}" alt="">`:IC_STAT[i]}</i><div><small>${esc(c.lb[i])}</small><b>${esc(v)}</b></div></div>`).join("")}</div></div>
+  <div class="sec"><h4>スキル<em>${esc(c.rank)}</em></h4>${ski.length?`<div class="sk3">${ski.map(({s,i})=>`<button class="skb${msel===i?" on":""}" data-sk="${i}"><div class="ic">${skIc(c,s,i)}<span class="sp">${esc(s.t||"")}</span></div><small>${esc(skx(c,i).n)}</small></button>`).join("")}</div>
+   <div class="skd"><div class="chs">${sx.ch.map(([t,col])=>`<span style="background:${col}">${esc(t)}</span>`).join("")}</div><div class="txt">${kw(sx.d)}</div></div>`:`<p class="mu">スキルは設定されていません</p>`}</div>
+  <div class="sec"><h4>職分・モジュール</h4><div class="cl"><div class="ci">${mk("bun","")}</div><div class="cn"><b>${esc(p.cls||"")}</b>${b.mod?`<small>${esc(b.mod)}(STAGE ${p.stage})</small>`:""}</div></div>
+   <div class="mods">${(p.mods||[]).map((m,i)=>`<div class="md${m.sel?" on":""}"><div class="mi">${m.lock?IC.lock:m.empty?IC.slash:mk(m.sel?"mod":"ms"+i,"")}</div><small>${esc(m.n||"")}</small></div>`).join("")}</div>
+   ${p.mname?`<div class="mn">${esc(p.mname)}</div>`:""}${p.trait?`<h5>特性</h5><div class="txt">${kw(p.trait)}</div>`:""}
+   ${p.talents.length?`<h5>素質</h5>${p.talents.map(t=>`<div class="tal"><span class="chip">${esc(t.t)}</span><div class="txt">${kw(t.d)}</div></div>`).join("")}`:""}</div>
+  <div class="sec"><h4>攻撃範囲・タグ</h4><div class="rr"><div class="rgm" style="width:${(x1-x0+1)*cs}px;height:${(y1-y0+1)*cs}px">${rg}</div><div class="tgs">${c.tags.filter(Boolean).map(t=>`<span class="tg">${esc(t)}</span>`).join("")}${c.extra?`<span class="tg ex"><i>${mk("extra","")}</i>${esc(c.extra.t||"")}</span>`:""}</div></div></div>`;
+  const ai=wrap.querySelector("img.art");if(ai)ai.style.transform=artTf(own?fitDef():rc.fit);
+  wrap.querySelectorAll("[data-sk]").forEach(q=>q.onclick=()=>{msel=+q.dataset.sk;buildM()});
+  wrap.querySelector("[data-back]").onclick=()=>{showStat=false;render()}}
 
  document.addEventListener("keydown",e=>{if(!host.classList.contains("show"))return;const t=e.composedPath()[0]||e.target;
   if(e.key==="Escape"&&(pk||open)){if(pk){pk=null;renderPop()}else{open=null;build()}return}
@@ -827,7 +881,7 @@ document.addEventListener("mousedown",e=>{if(!pk)return;const p=e.composedPath()
  fIc.onchange=e=>{const f=e.target.files[0];if(f&&icKey){setImg(V(),icKey,f);chg()}e.target.value=""};
  if(window.matchMedia)matchMedia(MS_MQ).addEventListener("change",()=>render());
  document.getElementById("bMs").onclick=()=>{showMs=true;showOutfit=false;tab=null;render()};
- return{fix,render:paint};
+ return{fix,render:()=>{paint();paintM()},form};
 })();
 
 /* 専用スクロールバー(平行四辺形) */
