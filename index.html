@@ -740,6 +740,16 @@ const SL=(w,col)=>IC.slash.replace("<svg",`<svg style="width:calc(6.4*var(--u));
  const IM=(c,k,st="")=>{const u=U(c,k);return `<div class="im${u?" has":""}" data-ic="${k}" title="クリックで画像を入れる / 右クリックで外す" style="${st}">${u?`<img src="${u}" alt="">`:""}</div>`};
  const skx=(c,i)=>{const s=c.skills[i]||{};return{n:s.n??("スキル"+(i+1)),ch:s.ch??[["攻撃回復","#e8772e"],["手動発動","#222"]],d:s.d??"ここにスキルの効果説明が入ります。\n[[数値]]や((補足))、__用語__を色分けできます。"}};
  const skIc=(c,s,i)=>`<div style="position:absolute;inset:0;background:${s.col||"#888"}"></div>${c.imgs["sk"+i]?`<img src="${U(c,"sk"+i)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">`:""}`;
+ /* ---- 差分更新: 裏で作った新しい形と、いまの画面を比べて、変わった所だけ直す(展開パネルのアニメ再生・スクロール位置のリセットを防ぐ) ---- */
+ const sync=(x,y)=>{for(const n of x.getAttributeNames())if(!y.hasAttribute(n))x.removeAttribute(n);for(const n of y.getAttributeNames()){const v=y.getAttribute(n);if(x.getAttribute(n)!==v)x.setAttribute(n,v)}};
+ function morph(a,b){const ac=[...a.childNodes],bc=[...b.childNodes],n=Math.max(ac.length,bc.length);
+  for(let i=0;i<n;i++){const x=ac[i],y=bc[i];
+   if(!y){if(!(x.classList&&x.classList.contains("sbthumb")))x.remove();continue}
+   if(!x){a.append(y);continue}
+   if(x.nodeType!==y.nodeType||x.nodeName!==y.nodeName||(x.classList&&x.classList.contains("pnl")&&x.className!==y.className)){x.replaceWith(y);continue}
+   if(x.nodeType===3||x.nodeType===8){if(x.data!==y.data)x.data=y.data;continue}
+   sync(x,y);morph(x,y)}}
+ const bar=(sc,par)=>{if(!sc)return;if(sc._bar)sc._bar();else sc._bar=attachBar(sc,par)};
  /* ---- 本体の画面との行き来 ---- */
  function credits(){const c=C(),ov=h("div",{id:"ov"});ov.dataset.k="credit";ov.addEventListener("click",e=>{if(e.target===ov)ov.remove()});
   ov.append(h("div",{class:"modal",role:"dialog"},h("h2",{},"クレジット"),h("p",{class:"hint"},"イラスト: "+(c.il||"(未設定)")),h("p",{class:"hint"},"CV: "+(c.cv||"(未設定)")),h("div",{class:"row"},h("button",{onclick:()=>ov.remove()},"閉じる"))));
@@ -753,7 +763,7 @@ const SL=(w,col)=>IC.slash.replace("<svg",`<svg style="width:calc(6.4*var(--u));
   if(!on){pk=null;renderPop();open=null;return}if(pk&&!edit()){pk=null;renderPop()}build()}
 
  function build(){
- const c=V(),ui=$("#ui");ui.innerHTML="";ui.className=(open?"o-"+open:"")+(edit()?" edit":"");
+ const c=V(),ui0=$("#ui"),ui=document.createElement("div"),post=[];ui0.className=(open?"o-"+open:"")+(edit()?" edit":"");
  const add=h=>{const n=el(h);ui.append(n);return n};
  add(`<div class="top"><div class="tgp"><button class="tb" style="width:calc(23.5*var(--u));justify-items:start;padding-left:calc(3.4*var(--u))" data-go="list">${IC.back}</button><button class="tb" style="width:calc(33.9*var(--u));border-left:calc(.3*var(--u)) solid #000" data-go="home">${IC.home}</button></div><button class="tb" style="width:calc(7.6*var(--u))" data-go="info">${IC.info}</button><div class="tgp"><button class="tb" style="width:calc(21.8*var(--u))" data-go="node">${IC.node}</button><button class="tb" style="width:calc(21.9*var(--u));border-left:calc(.3*var(--u)) solid #000" data-go="hang">${IC.hang}</button></div></div>`);
  add(`<div id="emb" data-ed="emb" style="opacity:${c.emb.op};width:calc(${c.emb.sz}*var(--u));height:calc(${c.emb.sz}*var(--u));transform:translate(calc(${c.emb.x}*var(--u)),calc(${c.emb.y}*var(--u)))">${U(c,"emb")?`<img src="${U(c,"emb")}" alt="">`:EMB}</div>`);
@@ -767,7 +777,7 @@ const SL=(w,col)=>IC.slash.replace("<svg",`<svg style="width:calc(6.4*var(--u));
   <div class="brow"><div class="box" style="width:calc(14.2*var(--u))">${IM(c,"cls")}</div><div class="box" data-ed="range" style="width:calc(22.7*var(--u))"><div class="rng" style="width:calc(${nw*cs}*var(--u));height:calc(${nh*cs}*var(--u))">${cells}</div><small>攻撃範囲</small></div>
    <div class="tags" data-ed="tags"><div class="tag" style="height:calc(4.2*var(--u));font-size:calc(3.2*var(--u))">${esc(c.tags[0])}</div><div class="tag" style="flex:1;font-size:calc(3.4*var(--u))">${esc(c.tags[1])}</div></div>
    ${c.extra?`<div class="box" data-ed="tags" style="width:calc(14.2*var(--u))">${IM(c,"extra")}<small>${esc(c.extra.t)}</small></div>`:""}</div></div>`);
- const ja=$(".ja"),est=[...c.name].reduce((a,ch)=>a+(ch.charCodeAt(0)<256?.58:1),0);ja.style.fontSize=`calc(${Math.min(17.2,Math.floor(640/est)/10)}*var(--u))`;
+ const ja=ui.querySelector(".ja"),est=[...c.name].reduce((a,ch)=>a+(ch.charCodeAt(0)<256?.58:1),0);ja.style.fontSize=`calc(${Math.min(17.2,Math.floor(640/est)/10)}*var(--u))`;
  const sks=c.skills.map((s,i)=>{const x=2.2+i*14;return s.empty?`<div class="c" style="left:calc(${x}*var(--u))" data-ed="sk${i}"><div class="ic empty">${SL(0,"#fff4")}</div></div>`:`<div class="c" style="left:calc(${x}*var(--u))" data-sk="${i}" data-ed="sk${i}"><div class="ic ${s.sel?"on":""}">${skIc(c,s,i)}<span class="sp">${esc(s.t)}</span><span class="bd">${BD}</span></div></div>`}).join("");
  add(`<div id="right"><div class="r1"><div class="ring" data-ed="lv">${ring(c)}<div class="t"><small>LV</small><b>${c.lv}</b></div><span class="mx">/${c.max}</span></div>
   <div class="dk exp" data-ed="lv"><div><small>EXP</small>${c.ex?`<span style="color:#f4c20d">${c.ex[0]}</span>/${c.ex[1]}`:"–/–"}</div>${c.ex?'<span class="pl">+</span>':'<span class="mx">MAX</span>'}</div></div>
@@ -778,14 +788,15 @@ const SL=(w,col)=>IC.slash.replace("<svg",`<svg style="width:calc(6.4*var(--u));
  if(open==="sk"){const sk=c.skills.map((s,i)=>({s,i})).filter(x=>!x.s.empty),cs=sk.find(x=>x.s.sel)||sk[0],X=skx(c,cs.i);
   const p=add(`<div class="pnl psk"><div class="phd" data-open=""><span>▲ スキル</span><button class="zm" data-fake>🔍</button></div><div class="pb"><div class="sbg">${sk.map(({s,i})=>`<div class="c" data-sk="${i}"><div class="ic ${s.sel?"on":""}">${skIc(c,s,i)}<span class="sp">${esc(s.t)}</span><span class="bd">${BD}</span></div><p>${esc(skx(c,i).n)}</p></div>`).join("")}</div>
    <div class="chs">${X.ch.map(([t,col])=>`<span class="chp" style="background:${col}">${esc(t)}</span>`).join("")}<span class="rngb">🔍 範囲</span></div><div class="txt">${kw(X.d)}</div><div class="dfl" style="margin-top:calc(3*var(--u))">デフォルト</div>
-   <div class="mrow"><span>RANK <b>7</b></span><span class="mi">▲ スキル特化</span></div></div></div>`);attachBar(p.querySelector(".pb"),p)}
+   <div class="mrow"><span>RANK <b>7</b></span><span class="mi">▲ スキル特化</span></div></div></div>`);post.push(()=>bar(ui0.querySelector(".psk .pb"),ui0.querySelector(".psk")))}
  if(open==="cl"){const p=c.panel,ex=add(`<div class="pnl pcl"><div class="phd" data-open="">▲ 職分+</div><div class="pb"></div></div>`),b=ex.querySelector(".pb");
   b.append(el(`<div class="sub"><span class="cls2">${IM(c,"bun")}</span>${esc(p.cls)}</div>`),el(`<div class="sec">モジュール</div>`));
   if(p.mods)b.append(el(`<div class="slots">${p.mods.map((m,i)=>`<div class="slot ${m.sel?"sel":""}">${m.lock?IC.lock:m.empty?IC.slash:IM(c,m.sel?"mod":"ms"+i)}${m.n?`<div style="position:absolute;bottom:calc(.6*var(--u))">${esc(m.n)}</div>`:""}</div>`).join("")}</div>`),el(`<div class="mname">${esc(p.mname)}</div>`),el(`<div class="dfl">デフォルト</div>`),el(`<div class="mrow"><span>STAGE <b>${p.stage}</b></span><span class="mi">＋ モジュール情報</span></div>`));
   else b.append(el(`<div style="font-size:calc(5*var(--u));color:#fff6;margin-top:calc(1.2*var(--u))">/</div>`));
   b.append(el(`<hr>`),el(`<div class="sec">特性</div>`),el(`<div class="txt">${kw(p.trait)}</div>`),el(`<div class="sec">素質</div>`));
-  p.talents.forEach(t=>b.append(el(`<div><span class="chip tg">${esc(t.t)}</span><div class="txt">${kw(t.d)}</div></div>`)));attachBar(b,ex)}
- const art=$("#art"),ai=$("#artimg"),aw=$("#artw"),T=c.at,rc0=C(),own=c.imgs.art,ab=own||rc0.img;art.className=ab?"":"ph";art.style.background=rc0.bg||"linear-gradient(135deg,#e4e4e4,#a9a9a9)";if(ab){ai.src=url(ab);ai.style.display="";ai.style.transform=artTf(own?fitDef():rc0.fit)}else{ai.removeAttribute("src");ai.style.display="none"}aw.style.transform=`translate(${T.x}%,${T.y}%) scale(${T.z/100})`;
+  p.talents.forEach(t=>b.append(el(`<div><span class="chip tg">${esc(t.t)}</span><div class="txt">${kw(t.d)}</div></div>`)));post.push(()=>bar(ui0.querySelector(".pcl .pb"),ui0.querySelector(".pcl")))}
+ morph(ui0,ui);post.forEach(f=>f());
+ const art=$("#art"),ai=$("#artimg"),aw=$("#artw"),T=c.at,rc0=C(),own=c.imgs.art,ab=own||rc0.img;art.className=ab?"":"ph";art.style.background=rc0.bg||"linear-gradient(135deg,#e4e4e4,#a9a9a9)";if(ab){{const u=url(ab);if(ai.getAttribute("src")!==u)ai.setAttribute("src",u)}ai.style.display="";ai.style.transform=artTf(own?fitDef():rc0.fit)}else{ai.removeAttribute("src");ai.style.display="none"}aw.style.transform=`translate(${T.x}%,${T.y}%) scale(${T.z/100})`;
  R.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>NAV[b.dataset.go]());
  R.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>{open=b.dataset.open||null;build()});
  R.querySelectorAll("[data-ic]").forEach(b=>{b.onclick=e=>{e.stopPropagation();if(!edit())return;icKey=b.dataset.ic;fIc.click()};b.oncontextmenu=e=>{e.preventDefault();if(!edit())return;delImg(c,b.dataset.ic);chg()}});
