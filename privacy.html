@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f6fa">
+  <meta name="description" content="きゃらしあたーのプライバシーポリシー">
+  <title>プライバシーポリシー｜きゃらしあたー</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f5f6fa;
+      --paper: #fff;
+      --ink: #25283a;
+      --muted: #697086;
+      --accent: #6558c9;
+      --accent-soft: #f0efff;
+      --line: #e8e9f0;
+      --shadow: 0 18px 55px rgba(37, 40, 58, .08);
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 10% 0%, rgba(101,88,201,.09), transparent 32rem),
+        var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN",
+        "Yu Gothic", Meiryo, sans-serif;
+      line-height: 1.85;
+      letter-spacing: .015em;
+    }
+    .page { width: min(900px, calc(100% - 32px)); margin: 0 auto; padding: 64px 0 48px; }
+    .hero { margin: 0 0 28px; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      color: var(--accent); font-size: .78rem; font-weight: 700;
+      letter-spacing: .14em; text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 22px; height: 2px; background: currentColor; }
+    h1 { margin: 12px 0 8px; font-size: clamp(2rem, 6vw, 3rem); line-height: 1.25; letter-spacing: .025em; }
+    .lead { margin: 0; color: var(--muted); }
+    .document {
+      background: var(--paper); border: 1px solid rgba(232,233,240,.9);
+      border-radius: 22px; box-shadow: var(--shadow); padding: clamp(24px, 6vw, 56px);
+    }
+    .intro { margin: 0 0 34px; padding: 18px 20px; background: var(--accent-soft); border-radius: 14px; }
+    section { padding: 26px 0; border-top: 1px solid var(--line); }
+    section:first-of-type { border-top: 0; padding-top: 0; }
+    h2 { display: flex; align-items: baseline; gap: 12px; margin: 0 0 14px; font-size: 1.2rem; line-height: 1.5; }
+    h2 .num { color: var(--accent); font-size: .82rem; font-weight: 800; letter-spacing: .08em; }
+    p { margin: 0 0 12px; }
+    p:last-child { margin-bottom: 0; }
+    ul { margin: 8px 0 14px; padding-left: 1.35em; }
+    li { padding-left: .2em; margin: 5px 0; }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; overflow-wrap: anywhere; }
+    a:hover { text-decoration-thickness: 2px; }
+    .note { color: var(--muted); font-size: .92rem; }
+    .contact {
+      margin-top: 10px; padding: 20px 22px; border: 1px solid var(--line);
+      border-radius: 14px; background: #fcfcff;
+    }
+    .contact strong { display: block; margin-bottom: 4px; }
+    footer { padding: 24px 8px 0; text-align: center; color: var(--muted); font-size: .82rem; }
+    @media (max-width: 600px) {
+      .page { width: min(100% - 22px, 900px); padding-top: 38px; }
+      .document { border-radius: 16px; }
+      section { padding: 22px 0; }
+      h2 { font-size: 1.1rem; }
+    }
+    @media print {
+      body { background: #fff; }
+      .page { width: 100%; padding: 0; }
+      .document { border: 0; box-shadow: none; padding: 0; }
+      footer { padding-bottom: 0; }
+      a { color: inherit; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div class="eyebrow">Privacy Policy</div>
+      <h1>プライバシーポリシー</h1>
+      <p class="lead">きゃらしあたーにおける情報の取り扱いについて</p>
+    </header>
+
+    <article class="document">
+      <p class="intro">
+        「きゃらしあたー」（以下「本ツール」）では、利用者の情報を適切に取り扱うよう努めます。
+        本ポリシーでは、本ツールにおける情報の取得・利用・保存などについて説明します。
+      </p>
+
+      <section>
+        <h2><span class="num">01</span>取得する情報</h2>
+        <p>本ツールでは、機能の提供や改善のため、以下の情報を取り扱う場合があります。</p>
+        <ul>
+          <li>本ツールへのアクセス状況や利用状況に関する情報</li>
+          <li>Google Drive連携を利用した場合に取得する、Googleアカウントの表示名およびメールアドレス</li>
+          <li>利用者が本ツールに入力・登録するキャラクター情報、画像、音声などのデータ</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2><span class="num">02</span>情報の保存について</h2>
+        <p>
+          本ツールで作成・編集したデータは、原則として利用者のブラウザ内（IndexedDB）に保存されます。
+          本ツールには運営者が管理するデータ保存用サーバーはなく、入力したデータが通常の利用によって
+          運営者へ自動送信されることはありません。
+        </p>
+        <p>
+          ただし、ブラウザのデータ削除や端末の故障、ブラウザの設定変更などにより、
+          保存したデータが失われる場合があります。大切なデータは、ZIP形式で定期的にバックアップしてください。
+        </p>
+      </section>
+
+      <section>
+        <h2><span class="num">03</span>データのインポート・エクスポート</h2>
+        <p>
+          本ツールでは、作成したデータをZIP形式で書き出したり、ZIPファイルから読み込んだりできます。
+          ZIPファイルには、キャラクター情報のほか、登録した画像・音声・衣装などのメディアデータ、
+          設定情報、BGMやクラスアイコンなどが含まれる場合があります。
+        </p>
+        <p>書き出したZIPファイルは利用者自身で管理してください。第三者に渡す場合は、含まれる情報を事前に確認してください。</p>
+      </section>
+
+      <section>
+        <h2><span class="num">04</span>Google Drive連携について</h2>
+        <p>
+          本ツールでは、利用者が任意でGoogle Drive連携を利用できます。
+          連携時にはGoogleの認証機能を利用し、専用フォルダを作成して、バックアップ用のZIPファイルを保存します。
+        </p>
+        <p>
+          Google Drive連携では、Googleアカウントの表示名・メールアドレスを取得するほか、
+          本ツールが作成したファイルを扱うために必要な範囲でGoogle Driveへアクセスします
+          （OAuthスコープ：<code>drive.file</code>）。
+          連携を通じて保存・読み込み・削除されるファイルは、利用者のGoogle Drive上で管理されます。
+        </p>
+        <p class="note">
+          Googleのサービスにおける情報の取り扱いについては、
+          <a href="https://policies.google.com/privacy?hl=ja" target="_blank" rel="noopener noreferrer">Googleプライバシーポリシー</a>
+          もご確認ください。
+        </p>
+      </section>
+
+      <section>
+        <h2><span class="num">05</span>アクセス解析について</h2>
+        <p>
+          本ツールでは、利用状況を把握するためにGoogle Analyticsを使用しています。
+          アクセス数や利用状況などを収集し、ツールの改善に役立てています。
+        </p>
+        <p class="note">
+          Google Analyticsによるデータの収集・処理については、
+          <a href="https://policies.google.com/technologies/partner-sites?hl=ja" target="_blank" rel="noopener noreferrer">Googleのサービスを使用するサイトやアプリから収集した情報のGoogleによる使用</a>
+          もご確認ください。
+        </p>
+      </section>
+
+      <section>
+        <h2><span class="num">06</span>第三者への情報提供</h2>
+        <p>
+          運営者は、法令に基づく場合を除き、利用者の情報を本人の同意なく第三者へ提供しません。
+          ただし、Google Drive連携およびGoogle Analyticsの利用に伴い、各Googleサービスへ必要な情報が送信される場合があります。
+        </p>
+      </section>
+
+      <section>
+        <h2><span class="num">07</span>情報の削除について</h2>
+        <ul>
+          <li><strong>ブラウザ内のデータ：</strong>ブラウザのサイトデータ・ストレージを削除することで消去できます。必要なデータは事前にバックアップしてください。</li>
+          <li><strong>Google Drive上のデータ：</strong>Google Drive上で対象ファイルを削除してください。削除したファイルは通常、ゴミ箱へ移動します。</li>
+          <li><strong>ダウンロードしたZIPファイル：</strong>利用者自身の端末や保存先で管理・削除してください。</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2><span class="num">08</span>免責事項</h2>
+        <p>
+          運営者は、本ツールの利用によって生じたデータの消失、破損、その他の損害について、
+          運営者に故意または重大な過失がある場合を除き、責任を負いかねます。
+        </p>
+        <p>
+          本ツールの機能や内容は、予告なく変更・停止する場合があります。
+          データの保全については、利用者ご自身でバックアップを行ってください。
+        </p>
+      </section>
+
+      <section>
+        <h2><span class="num">09</span>プライバシーポリシーの変更</h2>
+        <p>
+          本ポリシーは、必要に応じて内容を変更する場合があります。
+          変更後のプライバシーポリシーは、本ページに掲載した時点で効力を生じるものとします。
+        </p>
+      </section>
+
+      <section>
+        <h2><span class="num">10</span>お問い合わせ</h2>
+        <p>本ポリシーおよび本ツールに関するお問い合わせは、以下のXアカウントへのDMにてご連絡ください。</p>
+        <div class="contact">
+          <strong>運営者：美園ハジメ</strong>
+          X：<a href="https://x.com/misono_siru" target="_blank" rel="noopener noreferrer">@misono_siru</a>
+        </div>
+      </section>
+
+      <p class="note" style="text-align:right; margin-top:24px;">制定日：2026年11月13日</p>
+    </article>
+
+    <footer>© きゃらしあたー</footer>
+  </main>
+</body>
+</html>

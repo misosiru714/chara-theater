@@ -361,6 +361,8 @@ header{padding:4px 8px}header button{padding:4px 8px}
 /* ===== Googleドライブ連携の設定(ここだけ書き換えればOK) ===== */
 const GDRIVE_CLIENT_ID="953584223487-0nmlbp8vsrujjm5l3gi0b8go8fvbuaa1.apps.googleusercontent.com"; // ← Google Cloud Consoleで発行したクライアントID
 const GDRIVE_FOLDER="きゃらしあたー";                                // ← マイドライブに自動作成する専用フォルダ名
+const LITE_MAX=2560;  // 画像を軽くするとき、長辺がこれ(px)を超えていたら縮小する
+const LITE_Q=.88;     // WebPの画質(0〜1)。上げるほど綺麗で重くなる
 const GDRIVE_SCHEMA=1;                                               // ← 保存データのバージョン(schemaVersion)
 const $=s=>document.querySelector(s);
 const h=(t,a={},...c)=>{const e=document.createElement(t);for(const k in a){if(k.startsWith("on"))e.addEventListener(k.slice(2),a[k]);else if(k==="class")e.className=a[k];else e[k]=a[k]}e.append(...c.flat().filter(x=>x!=null&&x!==false));return e};
@@ -454,6 +456,8 @@ async function importZip(file){try{const z=await readZip(await file.arrayBuffer(
   if(!S.bgm&&man.bgm){S.bgm=blob(man.bgm);S.bgmName=man.bgmName||""}}
  S.chars.forEach(fixChar);fixSet();loadBgm();if(!S.chars.length)S.chars.push(newChar());if(S.cur>=S.chars.length)S.cur=0;stopAll();showList=true;render();dirty();track("zip_import",{characters:man.chars.length,mode});return true}catch(e){alert("読み込み失敗: "+e.message);return false}}
 
+/* プライバシーポリシー(同じフォルダの privacy.html)へのリンク。設定パネルの下とDriveのモーダルに置く */
+function privLink(){return h("p",{class:"hint"},h("a",{href:"privacy.html",target:"_blank",rel:"noopener"},"プライバシーポリシー"))}
 /* ---------- Googleドライブ連携(drive.file のみ / バックエンドなし) ----------
    ローカル(IndexedDB)が本体。Driveは任意の同期先で、失敗してもローカルのデータには触れない。
    Driveには「project.json + media」入りのZIP(= ZIP出力と同じ形式)を1ファイルとして保存する。
@@ -569,6 +573,7 @@ function openDrive(note0,bad0,auto){
   }
   kids.push(h("p",{class:"hint"+(bad?" err":""),role:"status"},busy?"通信中…":note));
   kids.push(h("p",{class:"hint"},"ブラウザ内のデータが本体です。Driveはバックアップ・端末間の引き継ぎ用で、通信に失敗してもローカルのデータは失われません。このツールが作ったファイルだけにアクセスします(drive.file)。"));
+  kids.push(privLink());
   ov.replaceChildren(h("div",{class:"modal",role:"dialog"},...kids))}
  paint();
  if(note0){say(note0,bad0);paint()}
@@ -737,8 +742,21 @@ function wrapSel(t,kind){const a=t.selectionStart,b=t.selectionEnd,v=t.value;let
 function fmtInput(o,k,ph){const t=ta(o,k,ph),pv=h("div",{class:"fmtpv"}),upd=()=>pv.replaceChildren(...fmt(o[k]||""));upd();t.addEventListener("input",upd);
  return[h("div",{class:"fmtbar"},...FBTN.map(([kk,l,tt])=>h("button",{title:tt,onclick:()=>wrapSel(t,kk)},l))),t,pv]}
 /* 入力部品 */
-const pick=(accept,cb)=>{const f=h("input",{type:"file",accept,onchange:()=>f.files[0]&&cb(f.files[0])});f.click()};
-const dropable=(el,pre,cb)=>{["dragenter","dragover"].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.classList.add("over")}));["dragleave","drop"].forEach(ev=>el.addEventListener(ev,()=>el.classList.remove("over")));el.addEventListener("drop",e=>{e.preventDefault();const f=[...e.dataTransfer.files].find(f=>f.type.startsWith(pre));f&&cb(f)})};
+/* 画像を入れるとき、WebPに変換して軽くする(PNG/JPEG/BMP/WebPが対象。GIF・SVGは動き/ベクターが消えるのでそのまま)。
+   透明は保つ。変換で逆に重くなる・WebP書き出しに未対応のブラウザ・失敗したときは、元の画像をそのまま使う */
+async function lite(f){
+ try{
+  if(!f||!(S.set&&S.set.liteImg!==false)||!/^image\/(png|jpe?g|bmp|webp)$/i.test(f.type))return f;
+  const bmp=await createImageBitmap(f),sc=Math.min(1,LITE_MAX/Math.max(bmp.width,bmp.height));
+  if(f.type==="image/webp"&&sc===1){bmp.close&&bmp.close();return f}
+  const w=Math.max(1,Math.round(bmp.width*sc)),hh=Math.max(1,Math.round(bmp.height*sc)),cv=document.createElement("canvas");cv.width=w;cv.height=hh;
+  cv.getContext("2d").drawImage(bmp,0,0,w,hh);bmp.close&&bmp.close();
+  const b=await new Promise(ok=>cv.toBlob(ok,"image/webp",LITE_Q));
+  return b&&b.type==="image/webp"&&(b.size<f.size||sc<1)?b:f
+ }catch(_){return f}}
+const isImg=a=>/^image/.test(a);
+const pick=(accept,cb)=>{const f=h("input",{type:"file",accept,onchange:async()=>{const x=f.files[0];if(x)cb(isImg(accept)?await lite(x):x)}});f.click()};
+const dropable=(el,pre,cb)=>{["dragenter","dragover"].forEach(ev=>el.addEventListener(ev,e=>{e.preventDefault();el.classList.add("over")}));["dragleave","drop"].forEach(ev=>el.addEventListener(ev,()=>el.classList.remove("over")));el.addEventListener("drop",e=>{e.preventDefault();const f=[...e.dataTransfer.files].find(f=>f.type.startsWith(pre));if(f)Promise.resolve(isImg(pre)?lite(f):f).then(cb)})};
 const auto=t=>{t.style.height="auto";t.style.height=Math.max(64,t.scrollHeight+2)+"px"};
 const ta=(o,k,ph)=>{const t=h("textarea",{value:o[k]||"",placeholder:ph||"",oninput:()=>{o[k]=t.value;auto(t);dirty()}});requestAnimationFrame(()=>auto(t));return t};
 const inp=(o,k,ph,after)=>h("input",{type:"text",value:o[k]||"",placeholder:ph||"",oninput:e=>{o[k]=e.target.value;dirty();after&&after()}});
@@ -1009,7 +1027,7 @@ document.addEventListener("mousedown",e=>{if(!pk)return;const p=e.composedPath()
   if("nckrf".includes(ty))i.type={n:"number",c:"color",k:"checkbox",r:"range",f:"file"}[ty];
   if(ty==="f")i.accept="image/*";if(op&&(ty==="n"||ty==="r")){i.min=op[0];i.max=op[1]}
   if(ty==="k")i.checked=get();else if(ty==="c")i.value=hex6(get());else if(ty!=="f")i.value=get();
-  i[ty==="s"||ty==="k"||ty==="f"?"onchange":"oninput"]=e=>{if(ty==="f"){const f=e.target.files[0];if(f)set(f);e.target.value=""}else set(ty==="k"?i.checked:i.value);o.chg();if(ty==="k"||ty==="f")o.rr();if(o.place)o.place()};
+  i[ty==="s"||ty==="k"||ty==="f"?"onchange":"oninput"]=e=>{const fin=()=>{o.chg();if(ty==="k"||ty==="f")o.rr();if(o.place)o.place()};if(ty==="f"){const f=e.target.files[0];e.target.value="";if(f)lite(f).then(x=>{set(x);fin()});else fin()}else{set(ty==="k"?i.checked:i.value);fin()}};
   w.append(i);if(ty==="r"){const rv=el(`<em style="font-style:normal;color:#f4c20d"> ${i.value}</em>`);w.firstChild.append(rv);i.addEventListener("input",()=>{rv.textContent=" "+i.value})}parent.append(w)})}
  FS.icons=c=>[["職業アイコン(左下)","f",0,u=>setImg(c,"cls",u)],["画像を外す","b",0,()=>delImg(c,"cls")],["信頼度のアイコン","f",0,u=>setImg(c,"trust",u)],["画像を外す","b",0,()=>delImg(c,"trust")],["召喚物のアイコン","f",0,u=>setImg(c,"extra",u)],["画像を外す","b",0,()=>delImg(c,"extra")]];
  /* ===== スマホ(PCでない画面)の「作る」: ステータスのフォーム ===== */
@@ -1057,7 +1075,7 @@ document.addEventListener("mousedown",e=>{if(!pk)return;const p=e.composedPath()
   if(/INPUT|TEXTAREA|SELECT/.test(t.tagName||""))return;
   if(e.key==="ArrowLeft")go(-1);if(e.key==="ArrowRight")go(1)});
  $("#ui").addEventListener("touchend",e=>{if(!edit()||e.changedTouches.length!==1)return;const t=e.changedTouches[0],els=R.elementsFromPoint(t.clientX,t.clientY),n=els.map(x=>x.closest("[data-ed]")).find(Boolean);if(!n)return;const ic=els.map(x=>x.closest("[data-ic]")).find(Boolean);if(ic&&!/^st\d$/.test(ic.dataset.ic))return;e.preventDefault();lastR=n.getBoundingClientRect();pk=n.dataset.ed;renderPop()},{passive:false});
- fIc.onchange=e=>{const f=e.target.files[0];if(f&&icKey){setImg(V(),icKey,f);chg()}e.target.value=""};
+ fIc.onchange=e=>{const f=e.target.files[0],k=icKey;e.target.value="";if(f&&k)lite(f).then(x=>{setImg(V(),k,x);chg()})};
  if(window.matchMedia)[MS_MQ,MS_MQ2].forEach(q=>matchMedia(q).addEventListener("change",()=>render()));
  document.getElementById("bMs").onclick=()=>{showMs=true;showOutfit=false;tab=null;render()};
  return{fix,render:()=>{paint();paintM()},form};
@@ -1096,7 +1114,7 @@ document.addEventListener("fullscreenchange",()=>{renderHeader();if($("#ov")&&$(
 $("#hdrTog").onclick=()=>{hdrOpen=!hdrOpen;updHdr()};
 $("#bFs").onclick=toggleFs;
 /* ---------- 設定・BGM ---------- */
-const fixSet=()=>{S.order=S.order||[];S.roleIcons=S.roleIcons||{};S.set=Object.assign({bgmVol:.5,voiceVol:1,loop:true,duck:true,hideHdr:true,dlgMode:"tap",artFit:"height"},S.set||{})};
+const fixSet=()=>{S.order=S.order||[];S.roleIcons=S.roleIcons||{};S.set=Object.assign({bgmVol:.5,voiceVol:1,loop:true,duck:true,hideHdr:true,dlgMode:"tap",artFit:"height",liteImg:true},S.set||{})};
 function applyVol(){if(!S.set)return;const t=S.set.duck&&playing!=null?.35:1;bgm.volume=Math.min(1,Math.max(0,S.set.bgmVol*t));audio.volume=Math.min(1,Math.max(0,S.set.voiceVol));bgm.loop=!!S.set.loop}
 function loadBgm(){if(S.bgm){bgm.src=url(S.bgm)}else{bgm.pause();bgm.removeAttribute("src");try{bgm.load()}catch(_){}}applyVol()}
 function toggleBgm(){if(!S.bgm)return;bgm.paused?bgm.play().catch(()=>alert("BGMを再生できませんでした")):bgm.pause()}
@@ -1127,8 +1145,10 @@ function buildSettings(){let ov=$("#ov");if(!ov){ov=h("div",{id:"ov"});ov.addEve
    chk("横向きのスマホでは、ヘッダーを隠す(左上の☰で出し入れ)","hideHdr"),
    FS_OK?h("div",{class:"row"},h("button",{onclick:toggleFs},document.fullscreenElement?"全画面を解除":"全画面にする")):h("p",{class:"hint"},"このブラウザ(iPhoneのSafariなど)では、全画面表示のボタンは使えません。"),
    h("p",{class:"hint"},"スマホでは、ブラウザの共有メニューから「ホーム画面に追加」して、そこから開くと、バーなしで表示できます。")),
+   h("div",{class:"card"},h("h3",{},"画像"),chk("画像を入れるとき、軽いWebPに変換する","liteImg"),
+    h("p",{class:"hint"},"PNG・JPEGなどを自動でWebPにして、保存やZIP・Driveのサイズを小さくします(透明はそのまま。長辺が"+LITE_MAX+"pxを超える絵は縮小します)。GIFとSVGは変換しません。すでに入れた画像は変わりません。")),
   SHOW_ROLE_ICON&&h("div",{class:"card"},h("h3",{},"職業アイコン"),h("p",{class:"hint"},"キャラの「クラス表示」と同じ名前に、アイコン画像を設定できます。一覧のカードの左下に表示されます。"),...rolesAll.map(roleRow),addRole),
-  h("p",{class:"hint"},"ブラウザの制限で、BGMは「再生」を押したあとに鳴り始めます。BGMとこの設定は、ブラウザ保存とZIPに含まれます。"));
+  h("p",{class:"hint"},"ブラウザの制限で、BGMは「再生」を押したあとに鳴り始めます。BGMとこの設定は、ブラウザ保存とZIPに含まれます。"),privLink());
  dropable(box,"audio/",setBgm);ov.replaceChildren(box);attachBar(box,ov)}
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeSettings()});
 $("#bSet").onclick=()=>{if($("#ov"))closeSettings();else{track("settings_open");buildSettings()}};
