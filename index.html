@@ -1,4 +1,33 @@
 <!DOCTYPE html>
+<!--
+  きゃらしあたー(仮) — Googleドライブ連携(任意機能)の設定手順
+  ------------------------------------------------------------
+  Driveに保存するには、自分用の「OAuthクライアントID」が必要です(無料)。
+  ※ 連携しなくても、ブラウザ保存とZIPの出力/読み込みは今まで通り使えます。
+
+  [Google Cloud Console での設定]  https://console.cloud.google.com/
+   1. プロジェクトを作る(または既存のものを選ぶ)
+   2. 「APIとサービス」→「ライブラリ」→「Google Drive API」を有効にする
+   3. 「APIとサービス」→「OAuth 同意画面」
+        ・ユーザーの種類は「外部」、アプリ名・サポートメール等を入力
+        ・スコープは追加しなくてOK(このツールが要求するのは drive.file のみ)
+        ・公開ステータスが「テスト」の間は、「テストユーザー」に自分のGoogleアカウントを追加
+          (公開する場合は「本番環境に移行」。drive.file は機密性の低いスコープです)
+   4. 「APIとサービス」→「認証情報」→「認証情報を作成」→「OAuth クライアント ID」
+        ・アプリケーションの種類: ウェブ アプリケーション
+        ・「承認済みの JavaScript 生成元」に、このツールを公開するオリジンを登録
+            例) https://ユーザー名.github.io   (パスは入れない / 末尾の / も不要)
+            例) http://localhost:8000          (動作確認用)
+        ・「承認済みのリダイレクト URI」は不要(ポップアップ方式のため)
+   5. 発行された「クライアント ID」(…apps.googleusercontent.com)を、
+        下の <script> 先頭の GDRIVE_CLIENT_ID に貼り付ける
+        (クライアント シークレットは使いません。HTMLに入れないでください)
+
+  [動作環境] https のオリジン(GitHub Pages 等)か localhost でのみ動きます。
+             file:// で直接開いた場合はDrive連携ボタンが無効になります(ZIPをご利用ください)。
+  [保存先]   マイドライブの「きゃらしあたー」フォルダ(自動作成)。
+             drive.file スコープのため、このツールが作ったファイルしか見えません。
+-->
 <html lang="ja">
 <head>
 <meta charset="utf-8">
@@ -111,6 +140,8 @@ textarea{min-height:64px;resize:vertical}
 .iprev{position:relative;width:92px;aspect-ratio:.46;background:#2b2b2d;color:#999;display:grid;place-items:center;overflow:hidden;margin:6px 0;font-size:12px}
 .iprev img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .chk{display:flex;align-items:center;gap:6px;margin:6px 0;font-size:13px;color:#333}
+.drow{display:flex;align-items:center;gap:6px;padding:7px 4px;border-bottom:1px solid #ccc;font-size:14px}.drow .dn{flex:1;min-width:0;display:flex;flex-direction:column}.drow .dn b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.drow .hint{margin:0}.dlist{margin:6px 0;max-height:min(34vh,260px);overflow:auto;border:1px solid #bbb;background:#f3f3f3}
+.modal input[type=text]{width:100%;padding:8px;border:1px solid #888;background:#fff;color:#111}.modal .err{color:#a3261b}
 #ov{position:fixed;inset:0;background:#000a;display:grid;place-items:center;z-index:50;padding:12px}
 .modal{background:#e6e6e6;color:#111;width:min(460px,100%);max-height:92vh;overflow:auto;padding:16px;border:2px solid #111}
 .modal h2{margin:0;font-size:18px;font-family:var(--font)}
@@ -314,7 +345,7 @@ header{padding:4px 8px}header button{padding:4px 8px}
   <span class="grow"></span>
   <span id="status">読み込み中…</span>
   <div class="isl" id="islSort"></div>
-  <div class="isl" id="islFile"><button id="bZip" data-s="出力">ZIPで出力</button><button id="bLoad" data-s="読込">ZIPを読み込む</button></div>
+  <div class="isl" id="islFile"><button id="bZip" data-s="出力">ZIPで出力</button><button id="bLoad" data-s="読込">ZIPを読み込む</button><button id="bDrive" data-s="☁">☁ Drive</button></div>
   <input id="fZip" type="file" accept=".zip" hidden>
   <div class="isl" id="islSys"><button id="bFs" style="display:none" title="全画面" data-s="⛶">⛶</button><button id="bBgm" style="display:none" data-s="♪">♪ BGM</button><button id="bSet" data-s="⚙">⚙ 設定</button></div>
 </header>
@@ -327,6 +358,10 @@ header{padding:4px 8px}header button{padding:4px 8px}
 </div>
 <script>
 "use strict";
+/* ===== Googleドライブ連携の設定(ここだけ書き換えればOK) ===== */
+const GDRIVE_CLIENT_ID="YOUR_CLIENT_ID.apps.googleusercontent.com"; // ← Google Cloud Consoleで発行したクライアントID
+const GDRIVE_FOLDER="きゃらしあたー";                                // ← マイドライブに自動作成する専用フォルダ名
+const GDRIVE_SCHEMA=1;                                               // ← 保存データのバージョン(schemaVersion)
 const $=s=>document.querySelector(s);
 const h=(t,a={},...c)=>{const e=document.createElement(t);for(const k in a){if(k.startsWith("on"))e.addEventListener(k.slice(2),a[k]);else if(k==="class")e.className=a[k];else e[k]=a[k]}e.append(...c.flat().filter(x=>x!=null&&x!==false));return e};
 const uid=()=>Math.random().toString(36).slice(2,10);
@@ -365,9 +400,9 @@ async function readZip(buf){const u=new Uint8Array(buf),dv=new DataView(buf),dec
  return out}
 const MIME={png:"image/png",jpg:"image/jpeg",jpeg:"image/jpeg",webp:"image/webp",gif:"image/gif",webm:"audio/webm",mp3:"audio/mpeg",wav:"audio/wav",ogg:"audio/ogg",m4a:"audio/mp4",mp4:"audio/mp4"};
 const extOf=b=>{const t=(b.type||"").split(";")[0];return Object.keys(MIME).find(k=>MIME[k]===t&&k!=="jpeg"&&k!=="mp4")||"bin"};
-async function exportZip(list,withProject){const files=[],enc=new TextEncoder(),safe=n=>(n||"character").replace(/[\\/:*?"<>|]+/g,"_");
+async function buildZip(list,withProject){const files=[],enc=new TextEncoder(),safe=n=>(n||"character").replace(/[\\/:*?"<>|]+/g,"_");
  const put=async(name,b)=>{if(!b)return null;files.push({name,data:new Uint8Array(await b.arrayBuffer())});return name};
- const man={app:"voice-viewer",version:1,chars:[]};
+ const man={app:"voice-viewer",version:1,schemaVersion:GDRIVE_SCHEMA,chars:[]};
  for(let i=0;i<list.length;i++){const c=list[i],o={...c,voices:[]};delete o.img;delete o.img2;delete o.fit;delete o.fit2;delete o.icon;
   const pk=async(t,k,key)=>t[key]?await put(`media/c${i}_o${k}_${key}.${extOf(t[key])}`,t[key]):null;
   o.outfits=[];for(let k=0;k<c.outfits.length;k++){const t=c.outfits[k];o.outfits.push({...t,img:await pk(t,k,"img"),img2:await pk(t,k,"img2"),sd:await pk(t,k,"sd")})}
@@ -378,7 +413,9 @@ async function exportZip(list,withProject){const files=[],enc=new TextEncoder(),
  if(S.bgm){man.bgm=await put("media/bgm."+extOf(S.bgm),S.bgm);man.bgmName=S.bgmName||""}}
  files.unshift({name:"project.json",data:enc.encode(JSON.stringify(man,null,1))});
  const fn=withProject&&list.length===S.chars.length?"kyara_theater_project.zip":list.length===1?safe(list[0].name)+"_kyara_theater.zip":"kyara_theater_"+list.length+"chars.zip";
- const a=h("a",{href:URL.createObjectURL(makeZip(files)),download:fn});a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);track("zip_export",{characters:list.length,scope:withProject?"project":"selected"})}
+ return {blob:makeZip(files),fn}}
+async function exportZip(list,withProject){const {blob,fn}=await buildZip(list,withProject);
+ const a=h("a",{href:URL.createObjectURL(blob),download:fn});a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000);track("zip_export",{characters:list.length,scope:withProject?"project":"selected"})}
 function openExport(){if($("#ov"))return;
  const ov=h("div",{id:"ov"});ov.dataset.k="export";document.body.append(ov);
  const close=()=>ov.remove();ov.addEventListener("click",e=>{if(e.target===ov)close()});
@@ -415,7 +452,126 @@ async function importZip(file){try{const z=await readZip(await file.arrayBuffer(
   S.cur=S.chars.length;S.chars.push(...add);
   for(const k in roleIcons){if(roleIcons[k]&&!S.roleIcons[k])S.roleIcons[k]=roleIcons[k]}
   if(!S.bgm&&man.bgm){S.bgm=blob(man.bgm);S.bgmName=man.bgmName||""}}
- S.chars.forEach(fixChar);fixSet();loadBgm();if(!S.chars.length)S.chars.push(newChar());if(S.cur>=S.chars.length)S.cur=0;stopAll();showList=true;render();dirty();track("zip_import",{characters:man.chars.length,mode})}catch(e){alert("読み込み失敗: "+e.message)}}
+ S.chars.forEach(fixChar);fixSet();loadBgm();if(!S.chars.length)S.chars.push(newChar());if(S.cur>=S.chars.length)S.cur=0;stopAll();showList=true;render();dirty();track("zip_import",{characters:man.chars.length,mode});return true}catch(e){alert("読み込み失敗: "+e.message);return false}}
+
+/* ---------- Googleドライブ連携(drive.file のみ / バックエンドなし) ----------
+   ローカル(IndexedDB)が本体。Driveは任意の同期先で、失敗してもローカルのデータには触れない。
+   Driveには「project.json + media」入りのZIP(= ZIP出力と同じ形式)を1ファイルとして保存する。
+   project.json には schemaVersion を含む。連携の状態(フォルダID・紐付けファイルID等)は IndexedDB の "drive" キーに保存し、
+   ZIPやキャラデータには混ぜない。*/
+const DRV={ok:location.protocol==="https:"||/^(localhost|127\.0\.0\.1)$/.test(location.hostname),
+ cfg:!/^YOUR_CLIENT_ID/.test(GDRIVE_CLIENT_ID),tok:null,exp:0,user:null,tc:null,wait:null,gis:null};
+const API="https://www.googleapis.com/drive/v3/files";
+DRV.loadGis=()=>DRV.gis||(DRV.gis=new Promise((ok,ng)=>{
+ if(window.google&&google.accounts&&google.accounts.oauth2)return ok();
+ const sc=document.createElement("script");sc.src="https://accounts.google.com/gsi/client";sc.async=true;
+ sc.onload=()=>ok();sc.onerror=()=>{DRV.gis=null;ng(new Error("Googleのログイン用スクリプトを読み込めませんでした(通信を確認してね)"))};document.head.append(sc)}));
+if(DRV.ok&&DRV.cfg)DRV.loadGis().catch(()=>{});
+/* アクセストークン取得(ポップアップ)。呼ぶときはなるべくクリック操作の中で */
+DRV.auth=(prompt="")=>new Promise((ok,ng)=>{
+ if(!(window.google&&google.accounts&&google.accounts.oauth2)){DRV.loadGis().catch(()=>{});return ng(new Error("Googleのログイン機能を読み込み中です。少し待ってからもう一度押してね"))}
+ if(!DRV.tc)DRV.tc=google.accounts.oauth2.initTokenClient({client_id:GDRIVE_CLIENT_ID,scope:"https://www.googleapis.com/auth/drive.file",
+  callback:r=>{const w=DRV.wait;DRV.wait=null;if(!w)return;
+   if(r.error||!r.access_token)w.ng(new Error("ログインできませんでした("+(r.error_description||r.error||"不明")+")"));
+   else{DRV.tok=r.access_token;DRV.exp=Date.now()+(Number(r.expires_in||3600)-60)*1000;w.ok(r.access_token)}},
+  error_callback:e=>{const w=DRV.wait;DRV.wait=null;if(!w)return;
+   w.ng(new Error(e&&e.type==="popup_closed"?"ログインがキャンセルされました":e&&e.type==="popup_failed_to_open"?"ログイン画面を開けませんでした(ポップアップのブロックを解除して、「Googleでログイン」を押してね)":"ログインできませんでした"))}});
+ DRV.wait={ok,ng};DRV.tc.requestAccessToken({prompt})});
+DRV.token=()=>DRV.tok&&Date.now()<DRV.exp?Promise.resolve(DRV.tok):DRV.auth("");
+/* Drive API呼び出し。401(期限切れ・約1時間)なら再認証して1回だけ自動でやり直す */
+DRV.api=async(url,init={})=>{
+ for(let n=0;n<2;n++){
+  const t=await DRV.token();let r;
+  try{r=await fetch(url,{...init,headers:{...(init.headers||{}),Authorization:"Bearer "+t}})}
+  catch(e){throw new Error("通信に失敗しました。ネットワークを確認してね(ローカルのデータは無事です)")}
+  if(r.status===401&&n===0){DRV.tok=null;DRV.exp=0;continue}
+  if(!r.ok){let m="";try{const j=await r.json();m=(j.error&&j.error.message)||""}catch(_){}
+   const e=new Error("Googleドライブがエラーを返しました("+r.status+")"+(m?": "+m:""));e.status=r.status;throw e}
+  return r}};
+DRV.getState=async()=>(await kv("get","drive").catch(()=>null))||{};
+DRV.setState=async p=>{const s=Object.assign(await DRV.getState(),p);await kv("put","drive",s);return s};
+DRV.json=async r=>r.json();
+DRV.who=async()=>{try{DRV.user=(await(await DRV.api("https://www.googleapis.com/drive/v3/about?fields=user(displayName,emailAddress)")).json()).user||null}catch(_){DRV.user=null}};
+DRV.login=async()=>{await DRV.auth("");await DRV.who();track("drive_login")};
+DRV.logout=()=>{DRV.tok=null;DRV.exp=0;DRV.user=null};
+/* 専用フォルダ(マイドライブ直下)。無ければ自動作成。ゴミ箱に入れられていたら作り直す */
+DRV.folder=async()=>{const st=await DRV.getState();
+ if(st.folderId){try{const j=await(await DRV.api(API+"/"+st.folderId+"?fields=id,trashed")).json();if(!j.trashed)return st.folderId}catch(e){if(e.status!==404)throw e}}
+ const q=encodeURIComponent("name='"+GDRIVE_FOLDER.replace(/'/g,"\\'")+"' and mimeType='application/vnd.google-apps.folder' and 'root' in parents and trashed=false");
+ let id=((await(await DRV.api(API+"?q="+q+"&fields=files(id)&pageSize=1")).json()).files||[])[0];id=id&&id.id;
+ if(!id)id=(await(await DRV.api(API+"?fields=id",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:GDRIVE_FOLDER,mimeType:"application/vnd.google-apps.folder"})})).json()).id;
+ await DRV.setState({folderId:id});return id};
+DRV.list=async()=>{const f=await DRV.folder();
+ const q=encodeURIComponent("'"+f+"' in parents and trashed=false");
+ return(await(await DRV.api(API+"?q="+q+"&orderBy="+encodeURIComponent("modifiedTime desc")+"&pageSize=100&fields="+encodeURIComponent("files(id,name,modifiedTime,size)"))).json()).files||[]};
+/* multipart upload(メタデータJSON + ZIP本体)。fileIdがあれば上書き(PATCH)、なければ新規作成(POST) */
+DRV.upload=async(blob,name,fileId,folderId)=>{
+ const meta={name,mimeType:"application/zip",appProperties:{app:"kyara-theater",schemaVersion:String(GDRIVE_SCHEMA)}};if(!fileId)meta.parents=[folderId];
+ const b="kt"+uid()+uid()+uid();
+ const body=new Blob(["--"+b+"\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n"+JSON.stringify(meta)+"\r\n--"+b+"\r\nContent-Type: application/zip\r\n\r\n",blob,"\r\n--"+b+"--"]);
+ const r=await DRV.api("https://www.googleapis.com/upload/drive/v3/files"+(fileId?"/"+fileId:"")+"?uploadType=multipart&fields="+encodeURIComponent("id,name,modifiedTime,size"),
+  {method:fileId?"PATCH":"POST",headers:{"Content-Type":"multipart/related; boundary="+b},body});
+ return r.json()};
+const fmtDate=s=>{try{return new Date(s).toLocaleString("ja-JP",{dateStyle:"medium",timeStyle:"short"})}catch(_){return s||""}};
+const fmtSize=n=>{n=Number(n)||0;return n>=1048576?(n/1048576).toFixed(1)+" MB":Math.max(1,Math.round(n/1024))+" KB"};
+/* 保存。overwrite=trueで紐付け中のファイルを上書き(他端末で更新されていたら確認)。やめた場合は null */
+DRV.save=async(name,overwrite)=>{
+ const st=await DRV.getState(),folderId=await DRV.folder();let fid=overwrite?st.fileId:null;
+ if(fid){let cur=null;
+  try{cur=await(await DRV.api(API+"/"+fid+"?fields="+encodeURIComponent("id,modifiedTime,trashed"))).json()}catch(e){if(e.status!==404)throw e}
+  if(!cur||cur.trashed){if(!confirm("紐付いていたファイルがドライブに見つかりません。新しいファイルとして保存しますか?"))return null;fid=null}
+  else if(st.modifiedTime&&cur.modifiedTime!==st.modifiedTime&&!confirm("このファイルは、最後に読み込み・保存したあとに別の端末(またはブラウザ)で更新されています。\n(ドライブ側の更新: "+fmtDate(cur.modifiedTime)+")\n\n上書きすると、その変更は失われます。上書きしますか?"))return null}
+ const {blob}=await buildZip(S.chars,true);
+ const j=await DRV.upload(blob,name,fid,folderId);
+ await DRV.setState({fileId:j.id,name:j.name,modifiedTime:j.modifiedTime});
+ track("drive_save",{characters:S.chars.length});return j};
+/* 読み込み。ZIP読み込みと同じ「追加/置き換え」の確認を通る。成功したら、そのファイルに紐付ける */
+DRV.load=async f=>{
+ const blob=await(await DRV.api(API+"/"+f.id+"?alt=media")).blob();
+ const ok=await importZip(blob);
+ if(ok){await DRV.setState({fileId:f.id,name:f.name,modifiedTime:f.modifiedTime});track("drive_load")}
+ return ok};
+/* 削除(ドライブのゴミ箱へ移動) */
+DRV.del=async f=>{
+ await DRV.api(API+"/"+f.id,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({trashed:true})});
+ const st=await DRV.getState();if(st.fileId===f.id)await DRV.setState({fileId:null,name:"",modifiedTime:null});
+ track("drive_delete")};
+function openDrive(){
+ const old=$("#ov");if(old)old.remove();
+ const ov=h("div",{id:"ov"});ov.dataset.k="drive";ov.addEventListener("click",e=>{if(e.target===ov)closeSettings()});document.body.append(ov);
+ let files=null,st={},busy=false,note="",bad=false,nm="";
+ const live=()=>document.body.contains(ov);
+ const say=(t,b)=>{note=t;bad=!!b;if(b)$("#status").textContent="Driveでエラー(ローカルのデータは無事です)"};
+ const refresh=async()=>{st=await DRV.getState();files=await DRV.list();if(!nm)nm=st.name||"kyara_theater_project.zip"};
+ const run=async fn=>{if(busy)return;busy=true;say("");paint();try{await fn()}catch(e){say(e.message||String(e),true)}busy=false;if(live())paint();renderHeader()};
+ const fixName=()=>{let n=(nm||"").trim().replace(/[\\/:*?"<>|]+/g,"_")||"kyara_theater_project";return/\.zip$/i.test(n)?n:n+".zip"};
+ const doSave=ow=>run(async()=>{const j=await DRV.save(fixName(),ow);if(!j)return say("保存をやめました(ローカルのデータはそのままです)");nm=j.name;await refresh();say("保存しました: "+j.name)});
+ function paint(){
+  const can=DRV.ok&&DRV.cfg,why=!DRV.ok?"このページは https で開かれていないため、Googleドライブ連携は使えません(file:// で直接開いた場合など、Googleのログインが通らないためです)。「ZIPで出力」「ZIPを読み込む」でバックアップや引っ越しができます。公開サイト(GitHub Pagesなど)で開くと使えます。":!DRV.cfg?"クライアントIDが未設定です。HTML冒頭のコメントの手順でIDを発行し、GDRIVE_CLIENT_ID に貼ってください。それまではZIPの出力/読み込みを使えます。":"";
+  const lg=!!DRV.tok;
+  const who=lg?"ログイン中"+(DRV.user?": "+(DRV.user.displayName||"")+(DRV.user.emailAddress?" ("+DRV.user.emailAddress+")":""):""):"未ログイン(ログインしなくても、ブラウザ保存とZIPは今まで通り使えます)";
+  const login=h("div",{class:"card"},h("h3",{},"Googleアカウント"),h("p",{class:"hint"+(why?" err":"")},why||who),
+   h("div",{class:"row"},lg?h("button",{disabled:busy,onclick:()=>{DRV.logout();files=null;st={};say("ログアウトしました");paint();renderHeader()}},"ログアウト"):h("button",{disabled:busy||!can,onclick:()=>run(async()=>{await DRV.login();await refresh()})},"Googleでログイン")));
+  const kids=[h("div",{class:"row",style:"justify-content:space-between;margin:0 0 8px"},h("h2",{},"Googleドライブ"),h("button",{onclick:closeSettings},"閉じる")),login];
+  if(lg){
+   kids.push(h("div",{class:"card"},h("h3",{},"保存"),
+    h("p",{class:"hint"},"全キャラ・設定・BGMを、マイドライブの「"+GDRIVE_FOLDER+"」フォルダにZIPで保存します。"),
+    st.fileId?h("p",{class:"hint"},"紐付け中のファイル: "+(st.name||"")):null,
+    h("input",{type:"text",value:nm,placeholder:"ファイル名",oninput:e=>{nm=e.target.value}}),
+    h("div",{class:"row"},h("button",{disabled:busy,onclick:()=>doSave(false)},"新規で保存"),st.fileId?h("button",{disabled:busy,onclick:()=>doSave(true)},"上書き保存"):null)));
+   const rows=(files||[]).map(f=>h("div",{class:"drow"},
+    h("div",{class:"dn"},h("b",{},f.name),h("span",{class:"hint"},fmtDate(f.modifiedTime)+" ・ "+fmtSize(f.size)+(st.fileId===f.id?" ・ 紐付け中":""))),
+    h("button",{disabled:busy,onclick:()=>run(async()=>{const ok=await DRV.load(f);if(!ok)openDrive()})},"読み込む"),
+    h("button",{class:"danger",disabled:busy,onclick:()=>{if(confirm("「"+f.name+"」をドライブのゴミ箱に移しますか?"))run(async()=>{await DRV.del(f);await refresh();say("ゴミ箱に移しました: "+f.name)})}},"削除")));
+   kids.push(h("div",{class:"card"},h("h3",{},"ドライブのデータ"),
+    h("div",{class:"row"},h("button",{disabled:busy,onclick:()=>run(refresh)},"一覧を更新")),
+    files?(rows.length?h("div",{class:"dlist"},...rows):h("p",{class:"hint"},"まだ保存されたデータはありません。")):h("p",{class:"hint"},busy?"読み込み中…":"")));
+  }
+  kids.push(h("p",{class:"hint"+(bad?" err":""),role:"status"},busy?"通信中…":note));
+  kids.push(h("p",{class:"hint"},"ブラウザ内のデータが本体です。Driveはバックアップ・端末間の引き継ぎ用で、通信に失敗してもローカルのデータは失われません。このツールが作ったファイルだけにアクセスします(drive.file)。"));
+  ov.replaceChildren(h("div",{class:"modal",role:"dialog"},...kids))}
+ paint();
+ if(DRV.tok)run(refresh)}
 
 /* ---------- 再生 ---------- */
 let rafId=0,startT=0,estDur=2500,dlgIdx=null;
@@ -530,7 +686,7 @@ function renderGallery(){const g=$("#gallery");g.classList.toggle("show",showLis
  const gg=$(".ggrid");gg.addEventListener("wheel",e=>{if(Math.abs(e.deltaX)<Math.abs(e.deltaY)){gg.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});fitGrid();
  if(canDrag)enableDrag(gg,items)}
 function renderHeader(){const d=(id,on)=>$(id).style.display=on?"":"none";
- d("#bList",!showList);d("#seg",!showList);d("#bMs",!showList&&!msOn()&&usesMs());document.body.dataset.screen=showList?"list":"char";d("#bZip",showList);d("#bLoad",showList);d("#bBgm",!!S.bgm);d("#bFs",!!document.documentElement.requestFullscreen);$("#bFs").classList.toggle("on",!!document.fullscreenElement);$("#bBgm").classList.toggle("on",!bgm.paused);
+ d("#bList",!showList);d("#seg",!showList);d("#bMs",!showList&&!msOn()&&usesMs());document.body.dataset.screen=showList?"list":"char";d("#bZip",showList);d("#bLoad",showList);d("#bDrive",showList);$("#bDrive").classList.toggle("on",!!DRV.tok);d("#bBgm",!!S.bgm);d("#bFs",!!document.documentElement.requestFullscreen);$("#bFs").classList.toggle("on",!!document.fullscreenElement);$("#bBgm").classList.toggle("on",!bgm.paused);
  $("#mView").classList.toggle("on",mode==="view");$("#mEdit").classList.toggle("on",mode==="edit")}
 function plate(){const c=C();return[h("div",{id:"nameplate"},h("div",{class:"role"},c.role),h("div",{class:"en"},c.en),h("div",{class:"nm"},c.name)),
  h("div",{id:"credit"},c.il&&cr(IC_IL,c.il),c.cv&&cr(IC_CV,c.cv,"＋"))]}
@@ -987,6 +1143,7 @@ $("#stage").addEventListener("click",()=>{if(dlgIdx!=null){dlgIdx=null;paintDial
 $("#bList").onclick=()=>{stopAll();showOutfit=false;showList=!showList;render()};
 $("#bZip").onclick=openExport;
 $("#bLoad").onclick=()=>$("#fZip").click();
+$("#bDrive").onclick=()=>{if($("#ov")&&$("#ov").dataset.k==="drive")closeSettings();else openDrive()};
 $("#fZip").onchange=e=>{if(e.target.files[0])importZip(e.target.files[0]);e.target.value=""};
 (async()=>{try{const d=await kv("get","main");if(d&&d.chars&&d.chars.length)S=d}catch(e){}
  if(!S.chars.length)S.chars.push(newChar());S.chars.forEach(fixChar);fixSet();loadBgm();applyVol();listSort=S.listSort||"reg";if(S.cur>=S.chars.length)S.cur=0;
