@@ -456,8 +456,8 @@ async function importZip(file){try{const z=await readZip(await file.arrayBuffer(
   if(!S.bgm&&man.bgm){S.bgm=blob(man.bgm);S.bgmName=man.bgmName||""}}
  S.chars.forEach(fixChar);fixSet();loadBgm();if(!S.chars.length)S.chars.push(newChar());if(S.cur>=S.chars.length)S.cur=0;stopAll();showList=true;render();dirty();track("zip_import",{characters:man.chars.length,mode});return true}catch(e){alert("読み込み失敗: "+e.message);return false}}
 
-/* プライバシーポリシー(同じフォルダの privacy.html)へのリンク。設定パネルの下とDriveのモーダルに置く */
-function privLink(){return h("p",{class:"hint"},h("a",{href:"privacy.html",target:"_blank",rel:"noopener"},"プライバシーポリシー"))}
+/* 利用規約(terms.html)とプライバシーポリシー(privacy.html)へのリンク(どちらも同じフォルダ)。設定パネルの下とDriveのモーダルに置く */
+function privLink(){const a=(href,t)=>h("a",{href,target:"_blank",rel:"noopener"},t);return h("p",{class:"hint"},a("terms.html","利用規約")," ・ ",a("privacy.html","プライバシーポリシー"))}
 /* ---------- Googleドライブ連携(drive.file のみ / バックエンドなし) ----------
    ローカル(IndexedDB)が本体。Driveは任意の同期先で、失敗してもローカルのデータには触れない。
    Driveには「project.json + media」入りのZIP(= ZIP出力と同じ形式)を1ファイルとして保存する。
