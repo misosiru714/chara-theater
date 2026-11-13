@@ -345,7 +345,7 @@ header{padding:4px 8px}header button{padding:4px 8px}
   <span class="grow"></span>
   <span id="status">読み込み中…</span>
   <div class="isl" id="islSort"></div>
-  <div class="isl" id="islFile"><button id="bZip" data-s="出力">ZIPで出力</button><button id="bLoad" data-s="読込">ZIPを読み込む</button><button id="bDrive" data-s="☁">☁ Drive</button></div>
+  <div class="isl" id="islFile"><button id="bZip" data-s="出力">ZIPで出力</button><button id="bLoad" data-s="読込">ZIPを読み込む</button><button id="bDriveSave" data-s="☁保存" title="Googleドライブに保存(未ログインなら、ログインから自動で始まります)">☁ 保存</button><button id="bDrive" data-s="☁">☁ Drive</button></div>
   <input id="fZip" type="file" accept=".zip" hidden>
   <div class="isl" id="islSys"><button id="bFs" style="display:none" title="全画面" data-s="⛶">⛶</button><button id="bBgm" style="display:none" data-s="♪">♪ BGM</button><button id="bSet" data-s="⚙">⚙ 設定</button></div>
 </header>
@@ -536,7 +536,7 @@ DRV.del=async f=>{
  await DRV.api(API+"/"+f.id,{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({trashed:true})});
  const st=await DRV.getState();if(st.fileId===f.id)await DRV.setState({fileId:null,name:"",modifiedTime:null});
  track("drive_delete")};
-function openDrive(){
+function openDrive(note0,bad0,auto){
  const old=$("#ov");if(old)old.remove();
  const ov=h("div",{id:"ov"});ov.dataset.k="drive";ov.addEventListener("click",e=>{if(e.target===ov)closeSettings()});document.body.append(ov);
  let files=null,st={},busy=false,note="",bad=false,nm="";
@@ -571,7 +571,18 @@ function openDrive(){
   kids.push(h("p",{class:"hint"},"ブラウザ内のデータが本体です。Driveはバックアップ・端末間の引き継ぎ用で、通信に失敗してもローカルのデータは失われません。このツールが作ったファイルだけにアクセスします(drive.file)。"));
   ov.replaceChildren(h("div",{class:"modal",role:"dialog"},...kids))}
  paint();
- if(DRV.tok)run(refresh)}
+ if(note0){say(note0,bad0);paint()}
+ if(DRV.tok)run(async()=>{await refresh();if(note0)say(note0,bad0)});
+ else if(auto&&DRV.ok&&DRV.cfg)run(async()=>{await DRV.login();await refresh()})}
+/* ワンボタン保存: 未ログインならログイン(Googleの許可画面)→そのまま保存まで自動。紐付け済みなら上書き */
+async function quickSave(){
+ if(DRV.busy)return;if(!DRV.ok||!DRV.cfg)return openDrive();
+ const stEl=$("#status");DRV.busy=true;stEl.textContent="Driveに保存中…";
+ try{if(!DRV.tok||Date.now()>=DRV.exp)await DRV.login();
+  const st=await DRV.getState(),j=await DRV.save(st.fileId&&st.name?st.name:"kyara_theater_project.zip",!!st.fileId);
+  stEl.textContent=j?"Driveに保存しました("+fmtDate(j.modifiedTime)+")":"Drive保存をやめました"}
+ catch(e){stEl.textContent="Driveでエラー(ローカルのデータは無事です)";DRV.busy=false;openDrive(e.message||String(e),true);return}
+ DRV.busy=false;renderHeader()}
 
 /* ---------- 再生 ---------- */
 let rafId=0,startT=0,estDur=2500,dlgIdx=null;
@@ -686,7 +697,7 @@ function renderGallery(){const g=$("#gallery");g.classList.toggle("show",showLis
  const gg=$(".ggrid");gg.addEventListener("wheel",e=>{if(Math.abs(e.deltaX)<Math.abs(e.deltaY)){gg.scrollLeft+=e.deltaY;e.preventDefault()}},{passive:false});fitGrid();
  if(canDrag)enableDrag(gg,items)}
 function renderHeader(){const d=(id,on)=>$(id).style.display=on?"":"none";
- d("#bList",!showList);d("#seg",!showList);d("#bMs",!showList&&!msOn()&&usesMs());document.body.dataset.screen=showList?"list":"char";d("#bZip",showList);d("#bLoad",showList);d("#bDrive",showList);$("#bDrive").classList.toggle("on",!!DRV.tok);d("#bBgm",!!S.bgm);d("#bFs",!!document.documentElement.requestFullscreen);$("#bFs").classList.toggle("on",!!document.fullscreenElement);$("#bBgm").classList.toggle("on",!bgm.paused);
+ d("#bList",!showList);d("#seg",!showList);d("#bMs",!showList&&!msOn()&&usesMs());document.body.dataset.screen=showList?"list":"char";d("#bZip",showList);d("#bLoad",showList);d("#bDrive",showList);d("#bDriveSave",showList);$("#bDrive").classList.toggle("on",!!DRV.tok);d("#bBgm",!!S.bgm);d("#bFs",!!document.documentElement.requestFullscreen);$("#bFs").classList.toggle("on",!!document.fullscreenElement);$("#bBgm").classList.toggle("on",!bgm.paused);
  $("#mView").classList.toggle("on",mode==="view");$("#mEdit").classList.toggle("on",mode==="edit")}
 function plate(){const c=C();return[h("div",{id:"nameplate"},h("div",{class:"role"},c.role),h("div",{class:"en"},c.en),h("div",{class:"nm"},c.name)),
  h("div",{id:"credit"},c.il&&cr(IC_IL,c.il),c.cv&&cr(IC_CV,c.cv,"＋"))]}
@@ -1143,7 +1154,8 @@ $("#stage").addEventListener("click",()=>{if(dlgIdx!=null){dlgIdx=null;paintDial
 $("#bList").onclick=()=>{stopAll();showOutfit=false;showList=!showList;render()};
 $("#bZip").onclick=openExport;
 $("#bLoad").onclick=()=>$("#fZip").click();
-$("#bDrive").onclick=()=>{if($("#ov")&&$("#ov").dataset.k==="drive")closeSettings();else openDrive()};
+$("#bDrive").onclick=()=>{if($("#ov")&&$("#ov").dataset.k==="drive")closeSettings();else openDrive(null,false,true)};
+$("#bDriveSave").onclick=quickSave;
 $("#fZip").onchange=e=>{if(e.target.files[0])importZip(e.target.files[0]);e.target.value=""};
 (async()=>{try{const d=await kv("get","main");if(d&&d.chars&&d.chars.length)S=d}catch(e){}
  if(!S.chars.length)S.chars.push(newChar());S.chars.forEach(fixChar);fixSet();loadBgm();applyVol();listSort=S.listSort||"reg";if(S.cur>=S.chars.length)S.cur=0;
